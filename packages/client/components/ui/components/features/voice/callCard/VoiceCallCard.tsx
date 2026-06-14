@@ -217,6 +217,7 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
 function VoiceCallCard(props: { channel: Channel }) {
   const voice = useVoice();
   const inCall = () => !!voice.channel();
+  const [cardHeight, setCardHeight] = createSignal("40vh");
 
   let viewRef: HTMLDivElement | undefined;
 
@@ -241,15 +242,48 @@ function VoiceCallCard(props: { channel: Channel }) {
     }
   });
 
+  function onResizePointerDown(e: PointerEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const startY = e.clientY;
+    const startHeight = viewRef!.getBoundingClientRect().height;
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    document.addEventListener(
+      "pointermove",
+      (ev) => {
+        const newHeight = Math.max(150, startHeight + (ev.clientY - startY));
+        setCardHeight(`${newHeight}px`);
+      },
+      { signal },
+    );
+    document.addEventListener("pointerup", () => controller.abort(), {
+      signal,
+      once: true,
+    });
+    document.addEventListener("pointercancel", () => controller.abort(), {
+      signal,
+      once: true,
+    });
+  }
+
   return (
     <Show when={voice.showCard(props.channel)}>
       <Base>
-        <Card ref={viewRef} active={inCall()}>
+        <Card
+          ref={viewRef}
+          active={inCall()}
+          style={inCall() ? { height: cardHeight() } : {}}
+        >
           <Show
             when={inCall()}
             fallback={<VoiceCallCardPreview channel={props.channel} />}
           >
             <VoiceCallCardActiveRoom />
+          </Show>
+          <Show when={inCall()}>
+            <CardResizeHandle onPointerDown={onResizePointerDown} />
           </Show>
         </Card>
       </Base>
@@ -275,9 +309,28 @@ const Base = styled("div", {
   },
 });
 
+const CardResizeHandle = styled("div", {
+  base: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "8px",
+    cursor: "ns-resize",
+    borderBottomLeftRadius: "var(--borderRadius-lg)",
+    borderBottomRightRadius: "var(--borderRadius-lg)",
+    background: "transparent",
+    transition: "background 0.2s",
+    _hover: {
+      background: "rgba(255, 255, 255, 0.15)",
+    },
+  },
+});
+
 const Card = styled("div", {
   base: {
     pointerEvents: "all",
+    position: "relative",
 
     maxWidth: "100%",
     transition: "var(--transitions-fast) all",
