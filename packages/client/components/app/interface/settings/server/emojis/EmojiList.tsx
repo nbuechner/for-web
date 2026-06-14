@@ -45,6 +45,12 @@ export function EmojiList(props: { server: Server }) {
   );
 
   async function onSubmit() {
+    if (!/^[a-z0-9_]+$/.test(editGroup.controls.name.value)) {
+      throw new Error(
+        "Emoji name may only contain lowercase letters, numbers, and underscores.",
+      );
+    }
+
     const body = new FormData();
     body.append("file", editGroup.controls.file.value![0]);
 

@@ -11,6 +11,9 @@ import { Modals } from "../types";
 const Error = styled("div", {
   base: {
     whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+    overflow: "auto",
+    maxHeight: "300px",
   },
 });
 

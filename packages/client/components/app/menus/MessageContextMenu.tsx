@@ -13,6 +13,7 @@ import MdContentCopy from "@material-design-icons/svg/outlined/content_copy.svg?
 import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
 import MdDeleteSweep from "@material-design-icons/svg/outlined/delete_sweep.svg?component-solid";
 import MdDownload from "@material-design-icons/svg/outlined/download.svg?component-solid";
+import MdImage from "@material-design-icons/svg/outlined/image.svg?component-solid";
 import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
 import MdLink from "@material-design-icons/svg/outlined/link.svg?component-solid";
 import MdMarkChatUnread from "@material-design-icons/svg/outlined/mark_chat_unread.svg?component-solid";
@@ -129,14 +130,30 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
     navigator.clipboard.writeText(props.file?.originalUrl ?? "");
   }
 
+  /**
+   * Copies the image bytes to the clipboard
+   */
+  async function CopyImage() {
+    const url = props.file?.originalUrl;
+    if (!url) return;
+    const res = await fetch(url);
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+  }
+
   return (
     <ContextMenu>
       <Show when={props.file}>
-        <ContextMenuButton icon={MdOpenInNew} onClick={OpenFile}>
-          <Trans>Open file</Trans>
-        </ContextMenuButton>
+        <Show when={props.file?.metadata.type === "Image"}>
+          <ContextMenuButton icon={MdImage} onClick={CopyImage}>
+            <Trans>Copy image</Trans>
+          </ContextMenuButton>
+        </Show>
         <ContextMenuButton icon={MdLink} onClick={CopyLink}>
           <Trans>Copy link</Trans>
+        </ContextMenuButton>
+        <ContextMenuButton icon={MdOpenInNew} onClick={OpenFile}>
+          <Trans>Open file</Trans>
         </ContextMenuButton>
         <a
           target="_blank"

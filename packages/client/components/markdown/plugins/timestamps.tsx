@@ -16,17 +16,17 @@ export function RenderTimestamp(props: { format: string; date: Dayjs }) {
   function format() {
     switch (props.format) {
       case "t":
-        return props.date.format("hh:mm");
+        return props.date.format("LT");
       case "T":
-        return props.date.format("hh:mm:ss");
+        return props.date.format("LTS");
       case "R":
         return props.date.fromNow();
       case "D":
-        return props.date.format("DD MMMM YYYY");
+        return props.date.format("LL");
       case "F":
-        return props.date.format("dddd, DD MMMM YYYY hh:mm");
+        return props.date.format("LLLL");
       default:
-        return props.date.format("DD MMMM YYYY hh:mm");
+        return props.date.format("LLL");
     }
   }
 

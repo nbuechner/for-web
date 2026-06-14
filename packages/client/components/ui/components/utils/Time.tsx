@@ -41,7 +41,7 @@ export function formatTime(
         })} ${formatTime(dayjs, { format: "time", value: options.value })}`;
       case "date":
       case "dateNormal":
-        return dayjs(options.value).format("DD/MM/YYYY");
+        return dayjs(options.value).format("L");
       case "dateAmerican":
         return dayjs(options.value).format("MM/DD/YYYY");
       case "iso8601":
