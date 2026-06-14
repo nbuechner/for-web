@@ -1186,6 +1186,10 @@ msgstr ""
 msgid "Edit message"
 msgstr ""
 
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Edit Channel"
+msgstr ""
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Edit roles"
 msgstr ""
@@ -3246,6 +3250,10 @@ msgstr ""
 
 #: components/i18n/errors.ts
 msgid "You have been locked out for entering a wrong password multiple times. Please wait a couple minutes and try again."
+msgstr ""
+
+#: src/interface/navigation/servers/ServerList.tsx
+msgid "You have {0} pending friend requests."
 msgstr ""
 
 #: components/i18n/errors.ts

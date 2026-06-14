@@ -1,6 +1,6 @@
 import { Accessor, For, JSX, Show, createMemo, createSignal } from "solid-js";
 
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { Channel, Server, User } from "stoat.js";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
@@ -69,6 +69,7 @@ export const ServerList = (props: Props) => {
   const client = useClient();
   const navigate = useNavigate();
   const { openModal } = useModals();
+  const { t } = useLingui();
 
   const navigateServer = (byOffset: number) => {
     const serverId = props.selectedServer();
@@ -124,7 +125,7 @@ export const ServerList = (props: Props) => {
           href="/app"
           use:floating={{
             tooltip: {
-              content: `You have ${homeNotifications()} pending friend requests.`,
+              content: t`You have ${homeNotifications()} pending friend requests.`,
               placement: "right",
             },
           }}

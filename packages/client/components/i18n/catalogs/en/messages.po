@@ -1202,6 +1202,10 @@ msgstr "Edit Identity"
 msgid "Edit message"
 msgstr "Edit message"
 
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Edit Channel"
+msgstr "Edit Channel"
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Edit roles"
 msgstr "Edit roles"
@@ -3301,6 +3305,10 @@ msgstr "You don't have permission to send messages in this channel."
 #: components/i18n/errors.ts
 msgid "You have been locked out for entering a wrong password multiple times. Please wait a couple minutes and try again."
 msgstr "You have been locked out for entering a wrong password multiple times. Please wait a couple minutes and try again."
+
+#: src/interface/navigation/servers/ServerList.tsx
+msgid "You have {0} pending friend requests."
+msgstr "You have {0} pending friend requests."
 
 #: components/i18n/errors.ts
 msgid "You have this user blocked."
