@@ -13,7 +13,6 @@ import { VirtualContainer } from "@minht11/solid-virtual-container";
 import { useQuery } from "@tanstack/solid-query";
 import { styled } from "styled-system/jsx";
 
-import { useClient } from "@revolt/client";
 import env from "@revolt/common/lib/env";
 import {
   CircularProgress,
@@ -27,15 +26,30 @@ type GifCategory = { title: string; image: string };
 
 type GifResult = {
   url: string;
-  media_formats: Record<"webm" | "tinywebm", { url: string }>;
+  previewUrl: string;
 };
+
+const KLIPY_BASE = `https://api.klipy.com/api/v1/${env.KLIPY_API_KEY}`;
+
+function klipyFetch(path: string) {
+  return fetch(`${KLIPY_BASE}${path}`).then((r) => r.json());
+}
+
+function mapGif(item: {
+  file: { hd: { gif: { url: string } }; sm: { webm?: { url: string }; gif: { url: string } } };
+}): GifResult {
+  return {
+    url: item.file.hd.gif.url,
+    previewUrl: item.file.sm.webm?.url ?? item.file.sm.gif.url,
+  };
+}
 
 const FilterContext = createContext<(value: string) => void>();
 
 export function GifPicker() {
   const [filter, setFilter] = createSignal("");
 
-  const fliterLowercase = () => filter().toLowerCase();
+  const filterLowercase = () => filter().toLowerCase();
 
   return (
     <Stack>
@@ -59,8 +73,8 @@ export function GifPicker() {
             </FilterContext.Provider>
           }
         >
-          <Match when={fliterLowercase()}>
-            <GifSearch query={fliterLowercase()} />
+          <Match when={filterLowercase()}>
+            <GifSearch query={filterLowercase()} />
           </Match>
         </Switch>
       </Suspense>
@@ -77,54 +91,33 @@ const Stack = styled("div", {
 });
 
 type CategoryItem =
-  | {
-      /**
-       * Category entry
-       */
-      t: 0;
-      category: GifCategory;
-    }
-  | {
-      /**
-       * Trending entry
-       */
-      t: 1;
-      gif: GifResult | null;
-    };
+  | { t: 0; category: GifCategory }
+  | { t: 1; gif: GifResult | null };
 
 function Categories() {
   let targetElement!: HTMLDivElement;
 
-  const client = useClient();
-
   const trendingCategories = useQuery<GifCategory[]>(() => ({
-    queryKey: ["trendingGifCategories"],
-    queryFn: () => {
-      const [authHeader, authHeaderValue] = client()!.authenticationHeader;
-
-      return fetch(`${env.DEFAULT_GIFBOX_URL}/categories?locale=en_US`, {
-        headers: {
-          [authHeader]: authHeaderValue,
-        },
-      }).then((r) => r.json());
-    },
+    queryKey: ["klipyCategories"],
+    queryFn: () =>
+      klipyFetch("/gifs/categories?locale=en_US").then((r) =>
+        r.data.categories.map(
+          (c: { category: string; preview_url: string }) => ({
+            title: c.category,
+            image: c.preview_url,
+          }),
+        ),
+      ),
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   }));
 
   const trendingGif = useQuery<GifResult | null>(() => ({
-    queryKey: ["trendingGif1"],
-    queryFn: () => {
-      const [authHeader, authHeaderValue] = client()!.authenticationHeader;
-
-      return fetch(`${env.DEFAULT_GIFBOX_URL}/trending?locale=en_US&limit=1`, {
-        headers: {
-          [authHeader]: authHeaderValue,
-        },
-      })
-        .then((r) => r.json())
-        .then((resp) => resp.results[0]);
-    },
+    queryKey: ["klipyTrending1"],
+    queryFn: () =>
+      klipyFetch("/gifs/trending?locale=en_US&per_page=1").then(
+        (r) => mapGif(r.data.data[0]) ?? null,
+      ),
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     initialData: null,
@@ -132,10 +125,7 @@ function Categories() {
 
   const items = createMemo(() => {
     return [
-      {
-        t: 1,
-        gif: trendingGif.data,
-      },
+      { t: 1, gif: trendingGif.data },
       ...(trendingCategories.data?.map((category) => ({ t: 0, category })) ??
         []),
     ] as CategoryItem[];
@@ -163,12 +153,14 @@ const CategoryItem = (props: {
   item: CategoryItem;
 }) => {
   const setFilter = useContext(FilterContext);
+  const image =
+    props.item.t === 0 ? props.item.category.image : props.item.gif?.previewUrl;
 
   return (
     <Category
       style={{
         ...(props.style as object),
-        "background-image": `linear-gradient(to right, #0006, #0006), url("${props.item.t === 0 ? props.item.category.image : props.item.gif?.url}")`,
+        "background-image": `linear-gradient(to right, #0006, #0006), url("${image}")`,
       }}
       tabIndex={props.tabIndex}
       role="listitem"
@@ -213,26 +205,14 @@ const Category = styled("div", {
 function GifSearch(props: { query: string }) {
   let targetElement!: HTMLDivElement;
 
-  const client = useClient();
-
   const search = useQuery<GifResult[]>(() => ({
-    queryKey: ["gifs", props.query],
+    queryKey: ["klipyGifs", props.query],
     queryFn: () => {
-      const [authHeader, authHeaderValue] = client()!.authenticationHeader;
-
-      return fetch(
-        `${env.DEFAULT_GIFBOX_URL}/` +
-          (props.query === "trending"
-            ? `trending?locale=en_US`
-            : `search?locale=en_US&query=${encodeURIComponent(props.query)}`),
-        {
-          headers: {
-            [authHeader]: authHeaderValue,
-          },
-        },
-      )
-        .then((r) => r.json())
-        .then((resp) => resp.results);
+      const path =
+        props.query === "trending"
+          ? "/gifs/trending?locale=en_US&per_page=24"
+          : `/gifs/search?locale=en_US&per_page=24&q=${encodeURIComponent(props.query)}`;
+      return klipyFetch(path).then((r) => r.data.data.map(mapGif));
     },
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
@@ -241,7 +221,7 @@ function GifSearch(props: { query: string }) {
   return (
     <div ref={targetElement} use:invisibleScrollable>
       <VirtualContainer
-        items={search.data as never /* resource */}
+        items={search.data as never}
         scrollTarget={targetElement}
         itemSize={{ height: 120, width: 200 }}
         crossAxisCount={(measurements) =>
@@ -270,7 +250,7 @@ const GifItem = (props: {
       role="listitem"
       style={props.style as string}
       tabIndex={props.tabIndex}
-      src={props.item.media_formats.tinywebm.url}
+      src={props.item.previewUrl}
       onClick={() => onMessage(props.item.url)}
     />
   );

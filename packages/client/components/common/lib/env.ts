@@ -45,12 +45,11 @@ export default {
     (import.meta.env.VITE_PROXY_URL as string) ??
     "https://proxy.stoatusercontent.com",
   /**
-   * What gifbox server to connect to by default.
+   * Klipy API key for GIF search (replaces defunct Tenor/gifbox).
    */
-  DEFAULT_GIFBOX_URL:
-    (import.meta.env.DEV ? import.meta.env.VITE_DEV_GIFBOX_URL : undefined) ??
-    (import.meta.env.VITE_GIFBOX_URL as string) ??
-    "https://api.gifbox.me",
+  KLIPY_API_KEY:
+    (import.meta.env.VITE_KLIPY_API_KEY as string) ??
+    "qmoK3qkc7wWb4c3r3aNHd5Gs14O4yzuMEp53YVhvkxENcaceljH6VBNkd3dRldQl",
   /**
    * hCaptcha site key to use if enabled
    */
