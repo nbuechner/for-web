@@ -450,6 +450,7 @@ function Entry(
   const state = useState();
   const voice = useVoice();
   const { openModal } = useModals();
+  const { t } = useLingui();
 
   const canEditChannel = createMemo(() =>
     (["ManageChannel", "ManagePermissions", "ManageWebhooks"] as const).some(
