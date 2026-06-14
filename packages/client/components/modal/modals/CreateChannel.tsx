@@ -103,46 +103,63 @@ export function CreateChannelModal(
             </Radio2.Option>
           </Form2.Radio>
 
-          <label
+          <div
             style={{
-              display: "flex",
-              gap: "8px",
-              "align-items": "center",
-              cursor: "pointer",
-              "font-size": "0.9em",
+              "border-top": "1px solid var(--md-sys-color-outline-variant)",
+              "padding-top": "12px",
+              "margin-top": "4px",
             }}
           >
-            <input
-              type="checkbox"
-              checked={restricted()}
-              onChange={(e) => {
-                setRestricted(e.currentTarget.checked);
-                setSelectedRole("");
-              }}
-            />
-            <Trans>Restrict to role</Trans>
-          </label>
-
-          <Show when={restricted()}>
-            <select
-              value={selectedRole()}
-              onChange={(e) => setSelectedRole(e.currentTarget.value)}
+            <label
               style={{
-                width: "100%",
-                padding: "8px",
-                background: "var(--md-sys-color-surface-variant)",
-                color: "var(--md-sys-color-on-surface-variant)",
-                border: "1px solid var(--md-sys-color-outline)",
-                "border-radius": "4px",
-                "font-size": "0.9em",
+                display: "flex",
+                gap: "8px",
+                "align-items": "center",
+                cursor: "pointer",
               }}
             >
-              <option value="">{t`— select a role —`}</option>
-              <For each={props.server.orderedRoles}>
-                {(role) => <option value={role.id}>{role.name}</option>}
-              </For>
-            </select>
-          </Show>
+              <input
+                type="checkbox"
+                checked={restricted()}
+                onChange={(e) => {
+                  setRestricted(e.currentTarget.checked);
+                  setSelectedRole("");
+                }}
+              />
+              <span style={{ "font-weight": "600" }}>Restrict to role</span>
+            </label>
+            <p
+              style={{
+                margin: "4px 0 0 24px",
+                "font-size": "0.82em",
+                color: "var(--md-sys-color-on-surface-variant)",
+              }}
+            >
+              Only members with the selected role can view this channel.
+            </p>
+
+            <Show when={restricted()}>
+              <select
+                value={selectedRole()}
+                onChange={(e) => setSelectedRole(e.currentTarget.value)}
+                style={{
+                  width: "100%",
+                  "margin-top": "10px",
+                  padding: "8px",
+                  background: "var(--md-sys-color-surface-variant)",
+                  color: "var(--md-sys-color-on-surface-variant)",
+                  border: "1px solid var(--md-sys-color-outline)",
+                  "border-radius": "4px",
+                  "font-size": "0.9em",
+                }}
+              >
+                <option value="">— select a role —</option>
+                <For each={props.server.orderedRoles}>
+                  {(role) => <option value={role.id}>{role.name}</option>}
+                </For>
+              </select>
+            </Show>
+          </div>
         </Column>
       </form>
     </Dialog>
