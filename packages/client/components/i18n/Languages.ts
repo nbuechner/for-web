@@ -184,6 +184,7 @@ export const Languages: { [key in Language]: LanguageEntry } = {
     emoji: "krd",
     i18n: "ckb",
     dayjs: "ku",
+    localeOptions: { rtl: true },
   },
   cs: { display: "Čeština", emoji: "🇨🇿", i18n: "cs" },
   da: { display: "Dansk", emoji: "🇩🇰", i18n: "da" },
@@ -222,7 +223,7 @@ export const Languages: { [key in Language]: LanguageEntry } = {
   ms: { display: "Bahasa Melayu", emoji: "🇲🇾", i18n: "ms" },
   "nb-NO": { display: "Norsk bokmål", emoji: "🇳🇴", i18n: "nb-NO", dayjs: "nb" },
   nl: { display: "Nederlands", emoji: "🇳🇱", i18n: "nl" },
-  fa: { display: "فارسی", emoji: "🇮🇷", i18n: "fa", verified: true },
+  fa: { display: "فارسی", emoji: "🇮🇷", i18n: "fa", verified: true, localeOptions: { rtl: true } },
   pl: { display: "Polski", emoji: "🇵🇱", i18n: "pl" },
   "pt-BR": {
     display: "Português (do Brasil)",

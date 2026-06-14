@@ -19,7 +19,7 @@ const Base = styled("div", {
     width: "fit-content",
 
     display: "flex",
-    maxWidth: "calc(min(100%, 420px))",
+    maxWidth: "calc(min(100%, 520px))",
     flexDirection: "row",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",

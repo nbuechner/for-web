@@ -1,4 +1,4 @@
-import { For, Match, Switch } from "solid-js";
+import { For, Match, Show, Switch } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import type { Channel } from "stoat.js";
@@ -70,6 +70,33 @@ export function DraftMessage(props: Props) {
       <BreakText>
         <Markdown content={props.draft.content!} />
       </BreakText>
+      <Show when={props.draft.status === "failed"}>
+        <FailedActions>
+          <FailedAction
+            onClick={() =>
+              state.draft.retrySend(
+                client(),
+                props.channel,
+                props.draft.idempotencyKey,
+              )
+            }
+          >
+            Retry
+          </FailedAction>
+          <span>·</span>
+          <FailedAction
+            dismiss
+            onClick={() =>
+              state.draft.cancelSend(
+                props.channel,
+                props.draft.idempotencyKey,
+              )
+            }
+          >
+            Dismiss
+          </FailedAction>
+        </FailedActions>
+      </Show>
       <For each={props.draft.files}>
         {(id) => {
           const file = state.draft.getFile(id);
@@ -97,6 +124,29 @@ export function DraftMessage(props: Props) {
     </MessageContainer>
   );
 }
+
+const FailedActions = styled("div", {
+  base: {
+    display: "flex",
+    gap: "6px",
+    fontSize: "12px",
+    color: "var(--md-sys-color-on-surface-variant)",
+    marginTop: "2px",
+  },
+});
+
+const FailedAction = styled("span", {
+  base: {
+    cursor: "pointer",
+    color: "var(--md-sys-color-primary)",
+    _hover: { textDecoration: "underline" },
+  },
+  variants: {
+    dismiss: {
+      true: { color: "var(--md-sys-color-error)" },
+    },
+  },
+});
 
 /**
  * Break all text and prevent overflow from math blocks

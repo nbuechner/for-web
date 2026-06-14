@@ -19,11 +19,16 @@ export async function loadAndSwitchLocale(
   key: Language,
   localeOptions: LocaleOptions,
 ) {
+  const langEntry = Languages[key];
+  const isRTL = localeOptions.rtl ?? langEntry.localeOptions?.rtl ?? false;
+  document.documentElement.dir = isRTL ? "rtl" : "ltr";
+  document.documentElement.lang = key;
+
   if (key !== i18n.locale) {
     const data =
-      Languages[key].i18n === "en"
+      langEntry.i18n === "en"
         ? en
-        : (await import(`./catalogs/${Languages[key].i18n}/messages.ts`))
+        : (await import(`./catalogs/${langEntry.i18n}/messages.ts`))
             .messages;
 
     i18n.load({
@@ -32,7 +37,7 @@ export async function loadAndSwitchLocale(
 
     i18n.activate(key);
 
-    loadTimeLocale(Languages[key], localeOptions);
+    loadTimeLocale(langEntry, localeOptions);
   }
 }
 
