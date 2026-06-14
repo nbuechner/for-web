@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui-solid/solid/macro";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import { createEffect, For, onMount, Show } from "solid-js";
+import { createEffect, createSignal, For, onMount, Show } from "solid-js";
 import { TrackLoop } from "solid-livekit-components";
 import { styled } from "styled-system/jsx";
 
@@ -49,7 +49,8 @@ function VoiceCallFullscreen() {
 }
 
 const TILE_MIN_WIDTH = "250px",
-  TILE_MIN_FOCUS_HEIGHT = "100px";
+  TILE_MIN_FOCUS_HEIGHT = "100px",
+  STRIP_DEFAULT = `max(20%, ${TILE_MIN_FOCUS_HEIGHT})`;
 
 /**
  * Show a grid of participants
@@ -62,6 +63,7 @@ function Participants() {
   const testTrackCount = 0;
 
   let callRef: HTMLDivElement | undefined;
+  const [stripHeight, setStripHeight] = createSignal(STRIP_DEFAULT);
 
   const tileWidth = () => {
     const vidWidth = Math.round(
@@ -75,6 +77,11 @@ function Participants() {
     if (!voice.focusTrack()) voice.toggleFocus();
   });
 
+  // Reset strip height when leaving focus mode.
+  createEffect(() => {
+    if (!voice.focusId()) setStripHeight(STRIP_DEFAULT);
+  });
+
   onMount(() => {
     createResizeObserver(callRef, ({ width, height }, el) => {
       if (el === callRef) {
@@ -83,6 +90,33 @@ function Participants() {
       }
     });
   });
+
+  function onResizeHandlePointerDown(e: PointerEvent) {
+    e.preventDefault();
+    const controller = new AbortController();
+    const { signal } = controller;
+    document.addEventListener(
+      "pointermove",
+      (ev) => {
+        if (!callRef) return;
+        const rect = callRef.getBoundingClientRect();
+        const fromBottom = rect.bottom - ev.clientY;
+        const pct = Math.round((fromBottom / rect.height) * 100);
+        setStripHeight(
+          `max(${TILE_MIN_FOCUS_HEIGHT}, ${Math.max(10, Math.min(80, pct))}%)`,
+        );
+      },
+      { signal },
+    );
+    document.addEventListener("pointerup", () => controller.abort(), {
+      signal,
+      once: true,
+    });
+    document.addEventListener("pointercancel", () => controller.abort(), {
+      signal,
+      once: true,
+    });
+  }
 
   return (
     <Call ref={callRef} class={voice.focusId() ? "" : scrollableStyles()}>
@@ -111,12 +145,18 @@ function Participants() {
               </IconButton>
             </div>
           </ShowBarButtonHolder>
+          <Show when={voice.showBar()}>
+            <ResizeHandle onPointerDown={onResizeHandlePointerDown} />
+          </Show>
         </Show>
         <Grid
           focus={!!voice.focusId()}
           show={voice.showBar()}
           class={voice.focusId() ? scrollableStyles({ direction: "x" }) : ""}
-          style={{ "--vc-tile-width": tileWidth() }}
+          style={{
+            "--vc-tile-width": tileWidth(),
+            ...(voice.focusId() ? { height: stripHeight() } : {}),
+          }}
         >
           <TrackLoop
             tracks={() => voice.vidTracks().filter((t) => !voice.isFocus(t))}
@@ -244,7 +284,6 @@ const Grid = styled("div", {
         flexDirection: "column",
         height: `max(20%, ${TILE_MIN_FOCUS_HEIGHT})`,
         minHeight: 0,
-        transition: "height .3s ease",
 
         "& .vc_tile": {
           width: "auto",
@@ -256,6 +295,23 @@ const Grid = styled("div", {
       false: {
         height: 0,
       },
+    },
+  },
+});
+
+const ResizeHandle = styled("div", {
+  base: {
+    flexShrink: 0,
+    height: "6px",
+    cursor: "ns-resize",
+    borderRadius: "3px",
+    background: "transparent",
+    transition: "background 0.2s",
+    _hover: {
+      background: "rgba(255, 255, 255, 0.15)",
+    },
+    _active: {
+      background: "rgba(255, 255, 255, 0.3)",
     },
   },
 });
