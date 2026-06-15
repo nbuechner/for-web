@@ -182,6 +182,7 @@ const Float = styled("div", {
 /** 'Marker' to send position information for mounting the floating call card */
 export function VoiceChannelCallCardMount(props: { channel: Channel }) {
   const voice = useVoice();
+  const isMobile = useIsMobile();
   const setInfo = useContext(callCardContext)!;
   let ref: HTMLDivElement | undefined;
 
@@ -209,7 +210,17 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
     setInfo();
   });
 
-  return <div ref={ref!} />;
+  // This spacer div reserves vertical space so messages don't scroll behind
+  // the absolutely-positioned voice card overlay.
+  const spacerHeight = () => {
+    if (!voice.showCard(props.channel)) return "0px";
+    if (voice.channel()?.id === props.channel.id) {
+      return isMobile() ? "calc(22vh + 56px)" : "calc(40vh + 56px)";
+    }
+    return "136px"; // preview card height + padding
+  };
+
+  return <div ref={ref!} style={{ height: spacerHeight(), "flex-shrink": "0", "pointer-events": "none" }} />;
 }
 
 /**
@@ -219,7 +230,7 @@ function VoiceCallCard(props: { channel: Channel }) {
   const voice = useVoice();
   const inCall = () => !!voice.channel();
   const isMobile = useIsMobile();
-  const [cardHeight, setCardHeight] = createSignal(isMobile() ? "28vh" : "40vh");
+  const [cardHeight, setCardHeight] = createSignal(isMobile() ? "22vh" : "40vh");
   const [dismissed, setDismissed] = createSignal(false);
 
   let viewRef: HTMLDivElement | undefined;

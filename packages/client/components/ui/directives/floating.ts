@@ -164,13 +164,18 @@ export function floating(element: HTMLElement, accessor: Accessor<Props>) {
               ? tooltip.content
               : tooltip!.aria!;
 
-          element.addEventListener("mouseenter", onMouseEnter);
-          element.addEventListener("mouseleave", onMouseLeave);
+          // Only attach hover-triggered tooltips on devices that support hover.
+          // On touch-only devices (hover: none) mouseenter fires on tap but
+          // mouseleave never fires, leaving the tooltip permanently visible.
+          if (!window.matchMedia("(hover: none)").matches) {
+            element.addEventListener("mouseenter", onMouseEnter);
+            element.addEventListener("mouseleave", onMouseLeave);
 
-          onCleanup(() => {
-            element.removeEventListener("mouseenter", onMouseEnter);
-            element.removeEventListener("mouseleave", onMouseLeave);
-          });
+            onCleanup(() => {
+              element.removeEventListener("mouseenter", onMouseEnter);
+              element.removeEventListener("mouseleave", onMouseLeave);
+            });
+          }
         }
       },
     ),

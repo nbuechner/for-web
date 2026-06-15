@@ -232,6 +232,7 @@ const VoiceCallControlHolder = styled("div", {
     padding: "var(--gap-md)",
 
     "@media (max-width: 768px)": {
+      flex: "0",
       gap: "var(--gap-sm)",
       padding: "var(--gap-sm)",
     },
