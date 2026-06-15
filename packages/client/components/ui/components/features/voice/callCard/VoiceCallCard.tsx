@@ -17,6 +17,7 @@ import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { Channel } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { useVoice } from "@revolt/rtc";
 
 import { VoiceCallCardActiveRoom } from "./VoiceCallCardActiveRoom";
@@ -217,7 +218,8 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
 function VoiceCallCard(props: { channel: Channel }) {
   const voice = useVoice();
   const inCall = () => !!voice.channel();
-  const [cardHeight, setCardHeight] = createSignal("40vh");
+  const isMobile = useIsMobile();
+  const [cardHeight, setCardHeight] = createSignal(isMobile() ? "28vh" : "40vh");
 
   let viewRef: HTMLDivElement | undefined;
 
@@ -323,6 +325,21 @@ const CardResizeHandle = styled("div", {
     transition: "background 0.2s",
     _hover: {
       background: "rgba(255, 255, 255, 0.15)",
+    },
+
+    "@media (max-width: 768px)": {
+      height: "24px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      "&::after": {
+        content: '""',
+        display: "block",
+        width: "40px",
+        height: "4px",
+        borderRadius: "2px",
+        background: "rgba(255, 255, 255, 0.3)",
+      },
     },
   },
 });

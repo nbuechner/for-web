@@ -4,6 +4,7 @@ import { createEffect, createSignal, For, onMount, Show } from "solid-js";
 import { TrackLoop } from "solid-livekit-components";
 import { styled } from "styled-system/jsx";
 
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { InRoom, useVoice } from "@revolt/rtc";
 import { IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
@@ -49,6 +50,7 @@ function VoiceCallFullscreen() {
 }
 
 const TILE_MIN_WIDTH = "250px",
+  TILE_MIN_WIDTH_MOBILE = "100px",
   TILE_MIN_FOCUS_HEIGHT = "100px",
   STRIP_DEFAULT = `max(20%, ${TILE_MIN_FOCUS_HEIGHT})`;
 
@@ -58,6 +60,7 @@ const TILE_MIN_WIDTH = "250px",
 function Participants() {
   const voice = useVoice();
   const { t } = useLingui();
+  const isMobile = useIsMobile();
 
   // Modify this value to get test tracks
   const testTrackCount = 0;
@@ -66,10 +69,11 @@ function Participants() {
   const [stripHeight, setStripHeight] = createSignal(STRIP_DEFAULT);
 
   const tileWidth = () => {
+    const minW = isMobile() ? TILE_MIN_WIDTH_MOBILE : TILE_MIN_WIDTH;
     const vidWidth = Math.round(
       100 / (voice.vidTracks().length + testTrackCount),
     );
-    return `max(${TILE_MIN_WIDTH}, ${vidWidth}% - var(--gap-md))`;
+    return `max(${minW}, ${vidWidth}% - var(--gap-md))`;
   };
 
   // Clear out any focus when the track that was focused is no longer available.
@@ -202,6 +206,11 @@ const View = styled("div", {
     flexDirection: "column",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
+
+    "@media (max-width: 768px)": {
+      gap: "var(--gap-sm)",
+      padding: "var(--gap-sm)",
+    },
   },
 });
 
