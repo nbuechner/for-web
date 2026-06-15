@@ -28,6 +28,8 @@ import {
 } from "@revolt/ui";
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
+
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
 
@@ -56,6 +58,7 @@ export type SidebarState =
 export function TextChannel(props: ChannelPageProps) {
   const state = useState();
   const client = useClient();
+  const isMobile = useIsMobile();
 
   // Last unread message id
   const [lastId, setLastId] = createSignal<string>();
@@ -213,12 +216,13 @@ export function TextChannel(props: ChannelPageProps) {
         </main>
         <Show
           when={
-            (state.layout.getSectionState(
+            !isMobile() &&
+            ((state.layout.getSectionState(
               LAYOUT_SECTIONS.MEMBER_SIDEBAR,
               true,
             ) &&
               props.channel.type !== "SavedMessages") ||
-            sidebarState().state !== "default"
+              sidebarState().state !== "default")
           }
         >
           <div
