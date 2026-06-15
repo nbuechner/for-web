@@ -18,6 +18,8 @@ import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
  * Call card (active)
  */
 export function VoiceCallCardActiveRoom() {
+  const isMobile = useIsMobile();
+
   return (
     <View>
       <Participants />
@@ -25,7 +27,7 @@ export function VoiceCallCardActiveRoom() {
         <VoiceCallControlHolder right>
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
-        <VoiceCallCardActions size="sm" />
+        <VoiceCallCardActions size={isMobile() ? "xs" : "sm"} />
         <VoiceCallControlHolder left overflow>
           <VoiceCallCardStatus />
         </VoiceCallControlHolder>
