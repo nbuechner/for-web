@@ -114,7 +114,7 @@ export function useError() {
         case "TooManyChannels":
           return t`You can't have more than ${err.max} channels on this server.`;
         case "TooManyServers":
-          return t`You can't be in more than ${err.max} servers, please leave one and try again.`;
+          return t`You can't be in more than ${err.max + 1} servers, please leave one and try again.`;
         case "TooManyPendingFriendRequests":
           return t`You've sent too many friend requests, the maximum is ${err.max}`;
         case "PayloadTooLarge":
