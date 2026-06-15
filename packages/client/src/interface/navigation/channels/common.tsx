@@ -21,16 +21,10 @@ export const SidebarBase = styled("div", {
       textDecoration: "none",
     },
 
-    // On mobile, overlay the full viewport as a drawer (server rail is hidden)
+    // On mobile, fill the drawer container (positioned by the parent Sidebar div)
     "@media (max-width: 768px)": {
-      position: "fixed",
-      left: 0,
-      top: 0,
-      bottom: 0,
-      width: "80vw",
-      maxWidth: "320px",
-      zIndex: 50,
-      boxShadow: "4px 0 16px rgba(0,0,0,0.25)",
+      flex: "1 1 auto",
+      minWidth: 0,
       borderTopLeftRadius: 0,
       borderBottomLeftRadius: 0,
     },

@@ -43,14 +43,22 @@ export const Sidebar = (props: {
     state.layout.setSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, false, true);
   }
 
-  // On mobile, hide the entire rail when the drawer is closed so messages
-  // get the full viewport width. Tapping the chevron in the channel header
-  // re-opens the drawer (sets PRIMARY_SIDEBAR = true).
-  const railVisible = () => !isMobile() || sidebarOpen();
+  // On mobile the outer div becomes a fixed full-height drawer; hidden when closed.
+  // On desktop it's a normal flex container in the document flow.
+  const wrapperClass = () =>
+    isMobile()
+      ? sidebarOpen()
+        ? drawerOpen
+        : drawerHidden
+      : drawerDesktop;
 
   return (
-    <Show when={railVisible()}>
-      <div style={{ display: "flex", "flex-shrink": 0 }}>
+    <>
+      {/* Scrim behind the drawer on mobile — tap to close */}
+      <Show when={isMobile() && sidebarOpen()}>
+        <div class={scrim} onClick={closeSidebar} />
+      </Show>
+      <div class={wrapperClass()}>
         <ServerList
           orderedServers={state.ordering.orderedServers(client())}
           setServerOrder={state.ordering.setServerOrder}
@@ -71,10 +79,6 @@ export const Sidebar = (props: {
           menuGenerator={props.menuGenerator}
         />
         <Show when={sidebarOpen()}>
-          {/* Scrim behind the channel sidebar on mobile — tap to close */}
-          <Show when={isMobile()}>
-            <div class={scrim} onClick={closeSidebar} />
-          </Show>
           <Switch fallback={<Home />}>
             <Match when={params.server}>
               <Server />
@@ -82,7 +86,7 @@ export const Sidebar = (props: {
           </Switch>
         </Show>
       </div>
-    </Show>
+    </>
   );
 };
 
@@ -183,17 +187,38 @@ const Server: Component = () => {
   );
 };
 
-/**
- * Translucent overlay behind mobile drawer — covers full viewport so user can tap to dismiss
- */
+/** Desktop: normal flow flex container */
+const drawerDesktop = css({
+  display: "flex",
+  flexShrink: 0,
+});
+
+/** Mobile: fixed drawer from left edge, covers full height */
+const drawerOpen = css({
+  display: "flex",
+  flexShrink: 0,
+  position: "fixed",
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: "85vw",
+  maxWidth: "360px",
+  zIndex: 50,
+  boxShadow: "4px 0 24px rgba(0,0,0,0.35)",
+});
+
+/** Mobile: hidden entirely so messages get full width */
+const drawerHidden = css({
+  display: "none",
+});
+
+/** Translucent overlay behind the drawer — tap to dismiss */
 const scrim = css({
-  "@media (max-width: 768px)": {
-    position: "fixed",
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 49,
-    background: "rgba(0,0,0,0.4)",
-  },
+  position: "fixed",
+  left: 0,
+  top: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 49,
+  background: "rgba(0,0,0,0.4)",
 });
