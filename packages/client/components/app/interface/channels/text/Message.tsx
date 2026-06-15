@@ -336,6 +336,12 @@ const avatarContainer = cva({
   base: {
     height: "fit-content",
     borderRadius: "var(--borderRadius-circle)",
+    "@media (max-width: 768px)": {
+      "& img, & svg": {
+        width: "28px !important",
+        height: "28px !important",
+      },
+    },
   },
 });
 

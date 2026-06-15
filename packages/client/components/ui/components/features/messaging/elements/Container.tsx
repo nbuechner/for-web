@@ -211,6 +211,10 @@ const Info = styled("div", {
       true: {},
       false: {
         width: "54px",
+        "@media (max-width: 768px)": {
+          width: "36px",
+          padding: "2px 2px",
+        },
       },
     },
   },
