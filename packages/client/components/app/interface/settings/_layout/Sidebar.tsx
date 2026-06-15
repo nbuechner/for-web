@@ -2,6 +2,7 @@ import { Accessor, For, Setter, Show, onMount } from "solid-js";
 
 import { styled } from "styled-system/jsx";
 
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { Column, OverflowingText, Ripple } from "@revolt/ui";
 
 // import MdError from "@material-design-icons/svg/filled/error.svg?component-solid";
@@ -25,17 +26,20 @@ export function SettingsSidebar(props: {
   page: Accessor<string | undefined>;
 }) {
   const { navigate } = useSettingsNavigation();
+  const isMobile = useIsMobile();
 
   /**
-   * Select first page on load
+   * Select first page on load — on mobile, don't auto-select so the sidebar
+   * shows first as the navigation list.
    */
   onMount(() => {
-    if (!props.page()) {
+    if (!props.page() && !isMobile()) {
       props.setPage(props.list().entries[0].entries[0].id);
     }
   });
 
   return (
+    <Show when={!isMobile() || !props.page()}>
     <Base>
       <div use:invisibleScrollable>
         <Content>
@@ -92,6 +96,7 @@ export function SettingsSidebar(props: {
         </Content>
       </div>
     </Base>
+    </Show>
   );
 }
 

@@ -3,8 +3,10 @@ import { Accessor, JSX, Show } from "solid-js";
 import { css, cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { Breadcrumbs, IconButton, Text } from "@revolt/ui";
 
+import MdArrowBack from "@material-design-icons/svg/outlined/arrow_back.svg?component-solid";
 import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
 
 import { SettingsList } from "..";
@@ -15,12 +17,14 @@ import { useSettingsNavigation } from "../Settings";
  */
 export function SettingsContent(props: {
   onClose?: () => void;
+  setPage?: (page: string | undefined) => void;
   children: JSX.Element;
   list: Accessor<SettingsList<unknown>>;
   title: (ctx: SettingsList<never>, key: string) => string;
   page: Accessor<string | undefined>;
 }) {
   const { navigate } = useSettingsNavigation();
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -31,15 +35,33 @@ export function SettingsContent(props: {
       <Show when={props.page()}>
         <InnerContent>
           <InnerColumn>
-            <Text class="title" size="large">
-              <Breadcrumbs
-                elements={props.page()!.split("/")}
-                renderElement={(key) =>
-                  props.title(props.list() as SettingsList<never>, key)
-                }
-                navigate={(keys) => navigate(keys.join("/"))}
-              />
-            </Text>
+            <Show when={isMobile()}>
+              <div class={css({ display: "flex", alignItems: "center", gap: "var(--gap-sm)", marginBottom: "var(--gap-md)" })}>
+                <IconButton variant="standard" onPress={() => props.setPage?.(undefined)}>
+                  <MdArrowBack />
+                </IconButton>
+                <Text class="title" size="large">
+                  <Breadcrumbs
+                    elements={props.page()!.split("/")}
+                    renderElement={(key) =>
+                      props.title(props.list() as SettingsList<never>, key)
+                    }
+                    navigate={(keys) => navigate(keys.join("/"))}
+                  />
+                </Text>
+              </div>
+            </Show>
+            <Show when={!isMobile()}>
+              <Text class="title" size="large">
+                <Breadcrumbs
+                  elements={props.page()!.split("/")}
+                  renderElement={(key) =>
+                    props.title(props.list() as SettingsList<never>, key)
+                  }
+                  navigate={(keys) => navigate(keys.join("/"))}
+                />
+              </Text>
+            </Show>
             {props.children}
             <div class={css({ minHeight: "80px" })} />
           </InnerColumn>
@@ -125,6 +147,16 @@ const CloseAction = styled("div", {
       fontWeight: 600,
       color: "var(--md-sys-color-on-surface)",
       fontSize: "0.75rem",
+    },
+
+    "@media (max-width: 768px)": {
+      position: "fixed",
+      top: "12px",
+      right: "12px",
+      padding: 0,
+      zIndex: 10,
+      flexGrow: 0,
+      "&:after": { display: "none" },
     },
   },
 });

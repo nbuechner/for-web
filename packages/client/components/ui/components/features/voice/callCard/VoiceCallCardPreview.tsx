@@ -2,6 +2,7 @@ import { For, Show } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { Channel } from "stoat.js";
+import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { useUsers } from "@revolt/markdown/users";
@@ -13,7 +14,10 @@ import { Symbol } from "@revolt/ui/components/utils/Symbol";
 /**
  * Call card (preview)
  */
-export function VoiceCallCardPreview(props: { channel: Channel }) {
+export function VoiceCallCardPreview(props: {
+  channel: Channel;
+  onDismiss?: () => void;
+}) {
   const voice = useVoice();
   const { t } = useLingui();
 
@@ -31,6 +35,18 @@ export function VoiceCallCardPreview(props: { channel: Channel }) {
   return (
     <Preview onClick={() => voice.connect(props.channel)}>
       <Ripple />
+      <Show when={props.onDismiss}>
+        <button
+          class={dismissButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDismiss!();
+          }}
+          aria-label="Dismiss"
+        >
+          <Symbol size={18}>close</Symbol>
+        </button>
+      </Show>
       <Row>
         <For each={users()} fallback={<Symbol size={24}>voice_chat</Symbol>}>
           {(user) => (
@@ -65,5 +81,26 @@ const Preview = styled("div", {
     padding: "var(--gap-lg)",
 
     color: "var(--md-sys-color-on-surface)",
+  },
+});
+
+const dismissButton = css({
+  position: "absolute",
+  top: "var(--gap-sm)",
+  right: "var(--gap-sm)",
+  zIndex: 2,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "28px",
+  height: "28px",
+  borderRadius: "var(--borderRadius-circle)",
+  background: "rgba(0,0,0,0.3)",
+  border: "none",
+  cursor: "pointer",
+  color: "inherit",
+  padding: 0,
+  _hover: {
+    background: "rgba(0,0,0,0.5)",
   },
 });

@@ -220,6 +220,7 @@ function VoiceCallCard(props: { channel: Channel }) {
   const inCall = () => !!voice.channel();
   const isMobile = useIsMobile();
   const [cardHeight, setCardHeight] = createSignal(isMobile() ? "28vh" : "40vh");
+  const [dismissed, setDismissed] = createSignal(false);
 
   let viewRef: HTMLDivElement | undefined;
 
@@ -271,7 +272,7 @@ function VoiceCallCard(props: { channel: Channel }) {
   }
 
   return (
-    <Show when={voice.showCard(props.channel)}>
+    <Show when={voice.showCard(props.channel) && !dismissed()}>
       <Base>
         <Card
           ref={viewRef}
@@ -280,7 +281,12 @@ function VoiceCallCard(props: { channel: Channel }) {
         >
           <Show
             when={inCall()}
-            fallback={<VoiceCallCardPreview channel={props.channel} />}
+            fallback={
+              <VoiceCallCardPreview
+                channel={props.channel}
+                onDismiss={() => setDismissed(true)}
+              />
+            }
           >
             <VoiceCallCardActiveRoom />
           </Show>

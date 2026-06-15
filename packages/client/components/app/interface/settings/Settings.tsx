@@ -98,6 +98,7 @@ export function Settings(props: SettingsProps & SettingsConfiguration<never>) {
               list={list}
               title={props.title}
               onClose={props.onClose}
+              setPage={setPage}
             >
               <Presence exitBeforeEnter>
                 <Rerun on={page}>
