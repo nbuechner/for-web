@@ -1,6 +1,7 @@
 import { Component, JSX, Match, Show, Switch, createMemo } from "solid-js";
 
 import { Channel, Server as ServerI } from "stoat.js";
+import { css } from "styled-system/css";
 
 import {
   CategoryContextMenu,
@@ -8,6 +9,7 @@ import {
   ServerSidebarContextMenu,
 } from "@revolt/app";
 import { useClient, useUser } from "@revolt/client";
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { useModals } from "@revolt/modal";
 import { useLocation, useParams, useSmartParams } from "@revolt/routing";
 import { useState } from "@revolt/state";
@@ -28,9 +30,18 @@ export const Sidebar = (props: {
   const state = useState();
   const client = useClient();
   const { openModal } = useModals();
+  const isMobile = useIsMobile();
 
   const params = useParams<{ server: string }>();
   const location = useLocation();
+
+  const sidebarOpen = () =>
+    state.layout.getSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, true) &&
+    !location.pathname.startsWith("/discover");
+
+  function closeSidebar() {
+    state.layout.setSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, false, true);
+  }
 
   return (
     <div style={{ display: "flex", "flex-shrink": 0 }}>
@@ -53,12 +64,11 @@ export const Sidebar = (props: {
         }
         menuGenerator={props.menuGenerator}
       />
-      <Show
-        when={
-          state.layout.getSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, true) &&
-          !location.pathname.startsWith("/discover")
-        }
-      >
+      <Show when={sidebarOpen()}>
+        {/* Scrim behind the channel sidebar on mobile — tap to close */}
+        <Show when={isMobile()}>
+          <div class={scrim} onClick={closeSidebar} />
+        </Show>
         <Switch fallback={<Home />}>
           <Match when={params.server}>
             <Server />
@@ -165,3 +175,19 @@ const Server: Component = () => {
     </Show>
   );
 };
+
+/**
+ * Translucent overlay behind mobile sidebar — covers content area so user can tap to dismiss
+ */
+const scrim = css({
+  "@media (max-width: 768px)": {
+    position: "fixed",
+    // Start after the 56px server list so it stays interactive
+    left: "56px",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 49,
+    background: "rgba(0,0,0,0.4)",
+  },
+});

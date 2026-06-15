@@ -258,6 +258,9 @@ export function ChannelHeader(props: Props) {
             paddingInline: "16px",
             borderRadius: "var(--borderRadius-full)",
             background: "var(--md-sys-color-surface-container-high)",
+            "@media (max-width: 768px)": {
+              width: "120px",
+            },
           })}
           placeholder="Search messages..."
           value={searchValue()!}

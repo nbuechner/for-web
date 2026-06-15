@@ -9,6 +9,7 @@ import { Titlebar } from "@revolt/app/interface/desktop/Titlebar";
 import { useClient, useClientLifecycle } from "@revolt/client";
 import { State } from "@revolt/client/Controller";
 import { NotificationsWorker } from "@revolt/client/NotificationsWorker";
+import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { useModals } from "@revolt/modal";
 import { Navigate, useBeforeLeave, useLocation } from "@revolt/routing";
 import { useState } from "@revolt/state";
@@ -25,7 +26,27 @@ const Interface = (props: { children: JSX.Element }) => {
   const client = useClient();
   const { openModal } = useModals();
   const { isLoggedIn, lifecycle } = useClientLifecycle();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
+  const isMobile = useIsMobile();
+
+  // On mobile, collapse sidebar when entering a channel and restore when leaving.
+  // On desktop, always keep the sidebar open.
+  createEffect(() => {
+    const path = location.pathname;
+    if (isMobile()) {
+      const inChannel =
+        path.includes("/channel/") ||
+        /\/server\/[^/]+\/[^/]+/.test(path);
+      state.layout.setSectionState(
+        LAYOUT_SECTIONS.PRIMARY_SIDEBAR,
+        !inChannel,
+        true,
+      );
+    } else {
+      state.layout.setSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, true, true);
+    }
+  });
 
   useBeforeLeave((e) => {
     if (!e.defaultPrevented) {
@@ -121,6 +142,7 @@ const Layout = styled("div", {
     display: "flex",
     height: "100%",
     minWidth: 0,
+    position: "relative",
   },
   variants: {
     disconnected: {
