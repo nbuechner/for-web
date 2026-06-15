@@ -43,39 +43,46 @@ export const Sidebar = (props: {
     state.layout.setSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, false, true);
   }
 
+  // On mobile, hide the entire rail when the drawer is closed so messages
+  // get the full viewport width. Tapping the chevron in the channel header
+  // re-opens the drawer (sets PRIMARY_SIDEBAR = true).
+  const railVisible = () => !isMobile() || sidebarOpen();
+
   return (
-    <div style={{ display: "flex", "flex-shrink": 0 }}>
-      <ServerList
-        orderedServers={state.ordering.orderedServers(client())}
-        setServerOrder={state.ordering.setServerOrder}
-        unreadConversations={state.ordering
-          .orderedConversations(client())
-          .filter(
-            // TODO: muting channels
-            (channel) => channel.unread,
-          )}
-        user={user()!}
-        selectedServer={() => params.server}
-        onCreateOrJoinServer={() =>
-          openModal({
-            type: "create_or_join_server",
-            client: client(),
-          })
-        }
-        menuGenerator={props.menuGenerator}
-      />
-      <Show when={sidebarOpen()}>
-        {/* Scrim behind the channel sidebar on mobile — tap to close */}
-        <Show when={isMobile()}>
-          <div class={scrim} onClick={closeSidebar} />
+    <Show when={railVisible()}>
+      <div style={{ display: "flex", "flex-shrink": 0 }}>
+        <ServerList
+          orderedServers={state.ordering.orderedServers(client())}
+          setServerOrder={state.ordering.setServerOrder}
+          unreadConversations={state.ordering
+            .orderedConversations(client())
+            .filter(
+              // TODO: muting channels
+              (channel) => channel.unread,
+            )}
+          user={user()!}
+          selectedServer={() => params.server}
+          onCreateOrJoinServer={() =>
+            openModal({
+              type: "create_or_join_server",
+              client: client(),
+            })
+          }
+          menuGenerator={props.menuGenerator}
+        />
+        <Show when={sidebarOpen()}>
+          {/* Scrim behind the channel sidebar on mobile — tap to close */}
+          <Show when={isMobile()}>
+            <div class={scrim} onClick={closeSidebar} />
+          </Show>
+          <Switch fallback={<Home />}>
+            <Match when={params.server}>
+              <Server />
+            </Match>
+          </Switch>
         </Show>
-        <Switch fallback={<Home />}>
-          <Match when={params.server}>
-            <Server />
-          </Match>
-        </Switch>
-      </Show>
-    </div>
+      </div>
+    </Show>
   );
 };
 
@@ -177,13 +184,12 @@ const Server: Component = () => {
 };
 
 /**
- * Translucent overlay behind mobile sidebar — covers content area so user can tap to dismiss
+ * Translucent overlay behind mobile drawer — covers full viewport so user can tap to dismiss
  */
 const scrim = css({
   "@media (max-width: 768px)": {
     position: "fixed",
-    // Start after the 56px server list so it stays interactive
-    left: "56px",
+    left: 0,
     top: 0,
     right: 0,
     bottom: 0,

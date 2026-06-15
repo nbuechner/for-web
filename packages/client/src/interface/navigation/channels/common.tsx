@@ -21,14 +21,14 @@ export const SidebarBase = styled("div", {
       textDecoration: "none",
     },
 
-    // On mobile, overlay the content area and fill remaining width after server list
+    // On mobile, overlay the full viewport as a drawer (server rail is hidden)
     "@media (max-width: 768px)": {
-      position: "absolute",
-      // Offset by server list width (56px)
-      left: "56px",
+      position: "fixed",
+      left: 0,
       top: 0,
       bottom: 0,
-      width: "calc(100vw - 56px)",
+      width: "80vw",
+      maxWidth: "320px",
       zIndex: 50,
       boxShadow: "4px 0 16px rgba(0,0,0,0.25)",
       borderTopLeftRadius: 0,
