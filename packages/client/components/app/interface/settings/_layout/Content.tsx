@@ -110,6 +110,10 @@ const InnerContent = styled("div", {
     padding: "80px 32px",
     justifyContent: "stretch",
     zIndex: 1,
+
+    "@media (max-width: 768px)": {
+      padding: "24px 16px",
+    },
   },
 });
 

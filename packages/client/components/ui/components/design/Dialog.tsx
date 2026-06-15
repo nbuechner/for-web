@@ -151,6 +151,9 @@ Dialog.Scrim = styled("div", {
     padding: {
       true: {
         padding: "80px",
+        "@media (max-width: 768px)": {
+          padding: "24px",
+        },
       },
     },
     overflow: {
@@ -187,6 +190,12 @@ const Container = styled("div", {
 
     color: "var(--md-sys-color-on-surface)",
     background: "var(--md-sys-color-surface-container-high)",
+
+    "@media (max-width: 768px)": {
+      minWidth: "unset",
+      width: "100%",
+      borderRadius: "20px",
+    },
   },
 });
 

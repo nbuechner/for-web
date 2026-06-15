@@ -169,7 +169,7 @@ export function AppearanceMenu() {
           </div> */}
           </Row>
 
-          <Row justify="stretch">
+          <Row justify="stretch" wrap>
             <Button
               size="xs"
               group="connected-start"
@@ -204,7 +204,7 @@ export function AppearanceMenu() {
             </Button>
           </Row>
 
-          <Row justify="stretch">
+          <Row justify="stretch" wrap>
             <Button
               size="xs"
               group="connected-start"
@@ -278,6 +278,7 @@ export function AppearanceMenu() {
               <Trans>Fruit Salad</Trans>
             </Button>
           </Row>
+
         </Show>
       </Column>
 

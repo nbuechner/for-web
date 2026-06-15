@@ -1,7 +1,7 @@
 import { Component, JSX, Match, Show, Switch, createMemo } from "solid-js";
 
 import { Channel, Server as ServerI } from "stoat.js";
-import { css } from "styled-system/css";
+import { css, cva } from "styled-system/css";
 
 import {
   CategoryContextMenu,
@@ -59,6 +59,12 @@ export const Sidebar = (props: {
         <div class={scrim} onClick={closeSidebar} />
       </Show>
       <div class={wrapperClass()}>
+        {/* Close chevron button — mobile only, sticks out at the right edge */}
+        <Show when={isMobile() && sidebarOpen()}>
+          <button class={closeButton} onClick={closeSidebar} aria-label="Close sidebar">
+            ‹
+          </button>
+        </Show>
         <ServerList
           orderedServers={state.ordering.orderedServers(client())}
           setServerOrder={state.ordering.setServerOrder}
@@ -205,6 +211,31 @@ const drawerOpen = css({
   maxWidth: "360px",
   zIndex: 50,
   boxShadow: "4px 0 24px rgba(0,0,0,0.35)",
+  background: "var(--md-sys-color-surface)",
+  overflow: "hidden",
+});
+
+/** Close button at the right edge of the open drawer */
+const closeButton = css({
+  position: "absolute",
+  right: "-16px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  zIndex: 51,
+  width: "32px",
+  height: "48px",
+  borderRadius: "0 24px 24px 0",
+  background: "var(--md-sys-color-surface)",
+  border: "none",
+  cursor: "pointer",
+  color: "var(--md-sys-color-on-surface)",
+  fontSize: "20px",
+  lineHeight: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "2px 0 8px rgba(0,0,0,0.3)",
+  paddingLeft: "4px",
 });
 
 /** Mobile: hidden entirely so messages get full width */
