@@ -230,6 +230,11 @@ const VoiceCallControlHolder = styled("div", {
     alignSelf: "center",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
+
+    "@media (max-width: 768px)": {
+      gap: "var(--gap-sm)",
+      padding: "var(--gap-sm)",
+    },
   },
   variants: {
     right: {

@@ -154,5 +154,10 @@ const Actions = styled("div", {
 
     borderRadius: "var(--borderRadius-full)",
     background: "var(--md-sys-color-surface-container)",
+
+    "@media (max-width: 768px)": {
+      gap: "var(--gap-sm)",
+      padding: "var(--gap-sm)",
+    },
   },
 });
