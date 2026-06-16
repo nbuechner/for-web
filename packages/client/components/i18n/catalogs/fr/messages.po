@@ -280,7 +280,7 @@ msgstr "À propos"
 
 #: components/modal/modals/SignOutSessions.tsx
 msgid "Accept"
-msgstr ""
+msgstr "Accepter"
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Accept friend request"
