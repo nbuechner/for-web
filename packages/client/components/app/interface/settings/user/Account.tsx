@@ -125,8 +125,9 @@ function MultiFactorAuth() {
    */
   async function showRecoveryCodes() {
     const ticket = await mfaFlow(mfa.data!);
+    if (!ticket) return;
 
-    ticket!.fetchRecoveryCodes().then((codes: string[]) =>
+    ticket.fetchRecoveryCodes().then((codes: string[]) =>
       openModal({
         type: "mfa_recovery",
         mfa: mfa.data!,
@@ -140,8 +141,9 @@ function MultiFactorAuth() {
    */
   async function generateRecoveryCodes() {
     const ticket = await mfaFlow(mfa.data!);
+    if (!ticket) return;
 
-    ticket!.generateRecoveryCodes().then((codes: string[]) =>
+    ticket.generateRecoveryCodes().then((codes: string[]) =>
       openModal({
         type: "mfa_recovery",
         mfa: mfa.data!,
@@ -178,8 +180,10 @@ function MultiFactorAuth() {
   /**
    * Disable authenticator app
    */
-  function disableAuthenticatorApp() {
-    mfaFlow(mfa.data!).then((ticket) => ticket!.disableAuthenticator());
+  async function disableAuthenticatorApp() {
+    const ticket = await mfaFlow(mfa.data!);
+    if (!ticket) return;
+    ticket.disableAuthenticator();
   }
 
   return (
@@ -277,19 +281,19 @@ function ManageAccount() {
   /**
    * Disable account
    */
-  function disableAccount() {
-    mfaFlow(mfa.data!).then((ticket) =>
-      ticket!.disableAccount().then(() => logout()),
-    );
+  async function disableAccount() {
+    const ticket = await mfaFlow(mfa.data!);
+    if (!ticket) return;
+    ticket.disableAccount().then(() => logout());
   }
 
   /**
    * Delete account
    */
-  function deleteAccount() {
-    mfaFlow(mfa.data!).then((ticket) =>
-      ticket!.deleteAccount().then(() => logout()),
-    );
+  async function deleteAccount() {
+    const ticket = await mfaFlow(mfa.data!);
+    if (!ticket) return;
+    ticket.deleteAccount().then(() => logout());
   }
 
   return (
