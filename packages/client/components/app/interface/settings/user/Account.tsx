@@ -82,7 +82,7 @@ function EditAccount() {
             {email()}{" "}
             <Show when={email().startsWith("•")}>
               <a
-                onClick={(event) => {
+                onClick={(event: MouseEvent) => {
                   event.stopPropagation();
                   client().account.fetchEmail().then(setEmail);
                 }}
@@ -126,7 +126,7 @@ function MultiFactorAuth() {
   async function showRecoveryCodes() {
     const ticket = await mfaFlow(mfa.data!);
 
-    ticket!.fetchRecoveryCodes().then((codes) =>
+    ticket!.fetchRecoveryCodes().then((codes: string[]) =>
       openModal({
         type: "mfa_recovery",
         mfa: mfa.data!,
@@ -141,7 +141,7 @@ function MultiFactorAuth() {
   async function generateRecoveryCodes() {
     const ticket = await mfaFlow(mfa.data!);
 
-    ticket!.generateRecoveryCodes().then((codes) =>
+    ticket!.generateRecoveryCodes().then((codes: string[]) =>
       openModal({
         type: "mfa_recovery",
         mfa: mfa.data!,
@@ -157,7 +157,7 @@ function MultiFactorAuth() {
     const ticket = await mfaFlow(mfa.data!);
     const secret = await ticket!.generateAuthenticatorSecret();
 
-    let success;
+    let success = false;
     while (!success) {
       try {
         const code = await mfaEnableTOTP(secret, client().user!.username);
@@ -165,6 +165,9 @@ function MultiFactorAuth() {
         if (code) {
           await mfa.data!.enableAuthenticator(code);
           success = true;
+        } else {
+          // User cancelled - exit the retry loop
+          break;
         }
       } catch (err) {
         showError(err);
@@ -266,8 +269,9 @@ function ManageAccount() {
 
   const stillOwnServers = createMemo(
     () =>
-      client().servers.filter((server) => server.owner?.self || false).length >
-      0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      client().servers.filter((server: any) => server.owner?.self || false)
+        .length > 0,
   );
 
   /**
