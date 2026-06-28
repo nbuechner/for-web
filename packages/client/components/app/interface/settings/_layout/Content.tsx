@@ -1,6 +1,6 @@
-import { Accessor, JSX, Show } from "solid-js";
+import { Accessor, JSX, Setter, Show } from "solid-js";
 
-import { css, cva } from "styled-system/css";
+import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { useIsMobile } from "@revolt/common/lib/useIsMobile";
@@ -22,18 +22,15 @@ export function SettingsContent(props: {
   list: Accessor<SettingsList<unknown>>;
   title: (ctx: SettingsList<never>, key: string) => string;
   page: Accessor<string | undefined>;
+  ref: Setter<HTMLDivElement | undefined>;
 }) {
   const { navigate } = useSettingsNavigation();
   const isMobile = useIsMobile();
 
   return (
-    <div
-      use:scrollable={{
-        class: base(),
-      }}
-    >
+    <div ref={props.ref} use:scrollable={{ class: base }}>
       <Show when={props.page()}>
-        <InnerContent>
+        <InnerContent class="settings_cont">
           <InnerColumn>
             <Show when={isMobile()}>
               <div class={css({ display: "flex", alignItems: "center", gap: "var(--gap-sm)", marginBottom: "var(--gap-md)" })}>
@@ -68,7 +65,7 @@ export function SettingsContent(props: {
         </InnerContent>
       </Show>
       <Show when={props.onClose}>
-        <CloseAction>
+        <CloseAction class="close">
           <IconButton variant="tonal" onPress={props.onClose}>
             <MdClose />
           </IconButton>
@@ -81,19 +78,21 @@ export function SettingsContent(props: {
 /**
  * Base styles
  */
-const base = cva({
-  base: {
-    minWidth: 0,
-    flex: "1 1 800px",
-    flexDirection: "row",
-    display: "flex",
-    background: "var(--md-sys-color-surface-container-low)",
-    borderStartStartRadius: "30px",
-    borderEndStartRadius: "30px",
+const base = css({
+  minWidth: 0,
+  flex: "1 1 800px",
+  flexDirection: "row",
+  display: "flex",
+  background: "var(--md-sys-color-surface-container-low)",
+  borderStartStartRadius: "30px",
+  borderEndStartRadius: "30px",
 
-    "& > a": {
-      textDecoration: "none",
-    },
+  "& > a": {
+    textDecoration: "none",
+  },
+
+  _phone: {
+    borderRadius: 0,
   },
 });
 
@@ -111,9 +110,8 @@ const InnerContent = styled("div", {
     justifyContent: "stretch",
     zIndex: 1,
 
-    "@media (max-width: 768px)": {
-      padding: "24px 16px",
-    },
+    _tablet: { padding: "12px" },
+    _phone: { height: "100vh" },
   },
 });
 
@@ -147,7 +145,7 @@ const CloseAction = styled("div", {
       marginTop: "4px",
       display: "flex",
       justifyContent: "center",
-      width: "36px",
+      width: "40px",
       fontWeight: 600,
       color: "var(--md-sys-color-on-surface)",
       fontSize: "0.75rem",

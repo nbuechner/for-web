@@ -1,4 +1,5 @@
 import { Component, JSX, Match, Show, Switch, createMemo } from "solid-js";
+import { styled } from "styled-system/jsx";
 
 import { Channel, Server as ServerI } from "stoat.js";
 import { css, cva } from "styled-system/css";
@@ -16,6 +17,20 @@ import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 
 import { HomeSidebar, ServerList, ServerSidebar } from "./navigation";
+
+const MainBar = styled("div", {
+  base: {
+    display: "flex",
+    flexShrink: 0,
+
+    _phone: {
+      "--layout-width-channel-sidebar": "auto",
+      position: "absolute",
+      width: "100vw",
+      height: "100%",
+    },
+  },
+});
 
 /**
  * Left-most channel navigation sidebar

@@ -243,6 +243,7 @@ const GifItem = (props: {
 
   return (
     <Gif
+      playsinline
       loop
       autoplay
       muted

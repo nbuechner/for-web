@@ -3,7 +3,7 @@ import { Accessor, For, Setter, Show, onMount } from "solid-js";
 import { styled } from "styled-system/jsx";
 
 import { useIsMobile } from "@revolt/common/lib/useIsMobile";
-import { Column, OverflowingText, Ripple } from "@revolt/ui";
+import { Column, OverflowingText } from "@revolt/ui";
 
 // import MdError from "@material-design-icons/svg/filled/error.svg?component-solid";
 // import MdOpenInNew from "@material-design-icons/svg/filled/open_in_new.svg?component-solid";
@@ -21,7 +21,6 @@ import {
  */
 export function SettingsSidebar(props: {
   list: Accessor<SettingsList<unknown>>;
-
   setPage: Setter<string | undefined>;
   page: Accessor<string | undefined>;
 }) {
@@ -42,7 +41,7 @@ export function SettingsSidebar(props: {
     <Show when={!isMobile() || !props.page()}>
     <Base>
       <div use:invisibleScrollable>
-        <Content>
+        <Content class="content">
           <Column gap="lg">
             {props.list().prepend}
             <For each={props.list().entries}>
@@ -63,7 +62,6 @@ export function SettingsSidebar(props: {
                                 entry.id?.split("/")[0]
                               }
                             >
-                              <Ripple />
                               <SidebarButtonTitle>
                                 {entry.icon}
                                 <SidebarButtonContent>
@@ -109,6 +107,17 @@ const Base = styled("div", {
     flex: "1 0 218px",
     paddingLeft: "8px",
     justifyContent: "flex-end",
+    height: "100%",
+
+    _phone: {
+      position: "absolute",
+      width: "100vw",
+      paddingLeft: "12px",
+
+      "& > *": {
+        width: "100%",
+      },
+    },
   },
 });
 
@@ -127,6 +136,14 @@ const Content = styled("div", {
 
     "& a > div": {
       margin: 0,
+    },
+
+    _tablet: {
+      padding: "8px 0",
+    },
+    _phone: {
+      padding: "8px 0",
+      maxWidth: "unset",
     },
   },
 });

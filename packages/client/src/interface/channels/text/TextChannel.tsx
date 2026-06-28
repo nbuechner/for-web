@@ -33,6 +33,7 @@ import { useIsMobile } from "@revolt/common/lib/useIsMobile";
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
 
+import { Channel } from "stoat.js";
 import { MessageComposition } from "./Composition";
 import { MemberSidebar } from "./MemberSidebar";
 import { TextSearchSidebar } from "./TextSearchSidebar";
@@ -51,6 +52,10 @@ export type SidebarState =
   | {
       state: "default";
     };
+
+export function canIHasSidebar(ch: Channel) {
+  return !["SavedMessages", "DirectMessage"].includes(ch.type);
+}
 
 /**
  * Channel component
@@ -79,8 +84,7 @@ export function TextChannel(props: ChannelPageProps) {
   // Get a reference to the message box's load latest function
   let jumpToBottomRef: ((nearby?: string) => void) | undefined;
 
-  // Get a reference to the message list's "end status"
-  let atEndRef: (() => boolean) | undefined;
+  const [atEnd, setEnd] = createSignal(true);
 
   // Store last unread message id
   createEffect(
@@ -99,7 +103,7 @@ export function TextChannel(props: ChannelPageProps) {
   createEffect(
     on(
       // must be at the end of the conversation
-      () => props.channel.unread && (atEndRef ? atEndRef() : true),
+      () => props.channel.unread && atEnd(),
       (unread) => {
         if (unread) {
           if (document.hasFocus()) {
@@ -119,7 +123,7 @@ export function TextChannel(props: ChannelPageProps) {
 
   // Mark as read on re-focus
   function onFocus() {
-    if (props.channel.unread && (atEndRef ? atEndRef() : true)) {
+    if (props.channel.unread && atEnd()) {
       props.channel.ack();
     }
   }
@@ -205,8 +209,8 @@ export function TextChannel(props: ChannelPageProps) {
             }
             highlightedMessageId={highlightMessageId}
             clearHighlightedMessage={() => navigate(".")}
-            atEndRef={(ref) => (atEndRef = ref)}
             jumpToBottomRef={(ref) => (jumpToBottomRef = ref)}
+            atEnd={[atEnd, setEnd]}
           />
 
           <MessageComposition
@@ -221,8 +225,8 @@ export function TextChannel(props: ChannelPageProps) {
               LAYOUT_SECTIONS.MEMBER_SIDEBAR,
               true,
             ) &&
-              props.channel.type !== "SavedMessages") ||
-              sidebarState().state !== "default")
+              canIHasSidebar(props.channel)) ||
+            sidebarState().state !== "default"
           }
         >
           <div

@@ -1,4 +1,4 @@
-import { For, Match, Show, Switch } from "solid-js";
+import { Accessor, For, Match, Show, Switch } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import { File, Message } from "stoat.js";
@@ -7,6 +7,7 @@ import { useClient, useUser } from "@revolt/client";
 import { CustomEmoji, UnicodeEmoji } from "@revolt/markdown/emoji";
 import { useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
+import { MediaPickerProps } from "@revolt/ui/components/features/messaging/composition/picker/CompositionMediaPicker";
 
 import MdBadge from "@material-design-icons/svg/outlined/badge.svg?component-solid";
 import MdContentCopy from "@material-design-icons/svg/outlined/content_copy.svg?component-solid";
@@ -15,6 +16,7 @@ import MdDeleteSweep from "@material-design-icons/svg/outlined/delete_sweep.svg?
 import MdDownload from "@material-design-icons/svg/outlined/download.svg?component-solid";
 import MdImage from "@material-design-icons/svg/outlined/image.svg?component-solid";
 import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
+import MdEmojiEmotions from "@material-design-icons/svg/outlined/emoji_emotions.svg?component-solid";
 import MdLink from "@material-design-icons/svg/outlined/link.svg?component-solid";
 import MdMarkChatUnread from "@material-design-icons/svg/outlined/mark_chat_unread.svg?component-solid";
 import MdOpenInNew from "@material-design-icons/svg/outlined/open_in_new.svg?component-solid";
@@ -36,7 +38,12 @@ import {
 /**
  * Context menu for messages
  */
-export function MessageContextMenu(props: { message?: Message; file?: File }) {
+export function MessageContextMenu(props: {
+  message?: Message;
+  reactPicker?: Accessor<MediaPickerProps | undefined>;
+  file?: File;
+  link?: string;
+}) {
   const user = useUser();
   const state = useState();
   const client = useClient();
@@ -101,7 +108,7 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
   /**
    * Copy message link to clipboard
    */
-  function copyLink() {
+  function copyMessageLink() {
     navigator.clipboard.writeText(
       `${location.origin}${
         props.message!.server ? `/server/${props.message!.server?.id}` : ""
@@ -119,21 +126,18 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
   /**
    * Opens the file preview in a new tab
    */
-  function OpenFile() {
+  function openFile() {
     window.open(props.file?.originalUrl, "_blank");
   }
 
   /**
    * Copies the link to the original url of the file
    */
-  function CopyLink() {
+  function copyFileLink() {
     navigator.clipboard.writeText(props.file?.originalUrl ?? "");
   }
 
-  /**
-   * Copies the image bytes to the clipboard
-   */
-  async function CopyImage() {
+  async function copyImage() {
     const url = props.file?.originalUrl;
     if (!url) return;
     const res = await fetch(url);
@@ -141,19 +145,23 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
     await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
   }
 
+  function copyLink() {
+    navigator.clipboard.writeText(props.link ?? "");
+  }
+
   return (
     <ContextMenu>
       <Show when={props.file}>
         <Show when={props.file?.metadata.type === "Image"}>
-          <ContextMenuButton icon={MdImage} onClick={CopyImage}>
+          <ContextMenuButton icon={MdImage} onClick={copyImage}>
             <Trans>Copy image</Trans>
           </ContextMenuButton>
         </Show>
-        <ContextMenuButton icon={MdLink} onClick={CopyLink}>
-          <Trans>Copy link</Trans>
-        </ContextMenuButton>
-        <ContextMenuButton icon={MdOpenInNew} onClick={OpenFile}>
+        <ContextMenuButton icon={MdOpenInNew} onClick={openFile}>
           <Trans>Open file</Trans>
+        </ContextMenuButton>
+        <ContextMenuButton icon={MdLink} onClick={copyFileLink}>
+          <Trans>Copy file link</Trans>
         </ContextMenuButton>
         <a
           target="_blank"
@@ -164,6 +172,13 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
             <Trans>Save file</Trans>
           </ContextMenuButton>
         </a>
+
+        <ContextMenuDivider />
+      </Show>
+      <Show when={props.link}>
+        <ContextMenuButton icon={MdLink} onClick={copyLink}>
+          <Trans>Copy link</Trans>
+        </ContextMenuButton>
 
         <ContextMenuDivider />
       </Show>
@@ -179,7 +194,22 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
         <ContextMenuButton icon={MdContentCopy} onClick={copyText}>
           <Trans>Copy text</Trans>
         </ContextMenuButton>
+
         <ContextMenuDivider />
+
+        <Show
+          when={
+            props.reactPicker && props.message?.channel?.havePermission("React")
+          }
+        >
+          <ContextMenuButton
+            icon={MdEmojiEmotions}
+            onClick={(e) => props.reactPicker!()?.onClickEmoji(e)}
+          >
+            <Trans>React</Trans>
+          </ContextMenuButton>
+        </Show>
+
         <Show
           when={
             props.message!.author?.self &&
@@ -271,7 +301,9 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
             <Trans>Delete message</Trans>
           </ContextMenuButton>
         </Show>
-        <Show when={!props.message!.author?.self}>
+        <Show
+          when={!props.message!.author?.self && !props.message!.systemMessage}
+        >
           <ContextMenuButton icon={MdReport} onClick={report} destructive>
             <Trans>Report message</Trans>
           </ContextMenuButton>
@@ -282,8 +314,8 @@ export function MessageContextMenu(props: { message?: Message; file?: File }) {
             <Trans>Admin Panel</Trans>
           </ContextMenuButton>
         </Show>
-        <ContextMenuButton icon={MdShare} onClick={copyLink}>
-          <Trans>Copy link</Trans>
+        <ContextMenuButton icon={MdShare} onClick={copyMessageLink}>
+          <Trans>Copy message link</Trans>
         </ContextMenuButton>
         <Show when={state.settings.getValue("advanced:copy_id")}>
           <ContextMenuButton icon={MdBadge} onClick={copyId}>
