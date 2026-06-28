@@ -226,7 +226,7 @@ export function TextChannel(props: ChannelPageProps) {
               true,
             ) &&
               canIHasSidebar(props.channel)) ||
-            sidebarState().state !== "default"
+            sidebarState().state !== "default")
           }
         >
           <div
