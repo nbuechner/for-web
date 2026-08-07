@@ -74,6 +74,7 @@ export type Modals =
   | {
       type: "create_channel";
       server: Server;
+      categoryId?: string;
       cb?: (channel: Channel) => void;
     }
   | {
@@ -125,6 +126,10 @@ export type Modals =
     }
   | {
       type: "delete_message";
+      message: Message;
+    }
+  | {
+      type: "pin_message";
       message: Message;
     }
   | {
@@ -181,6 +186,7 @@ export type Modals =
       identifier: string;
       secret: string;
       callback: (code?: string) => void;
+      reject?: (reason?: string) => void;
     }
   | ({
       type: "mfa_flow";
@@ -340,4 +346,8 @@ export type Modals =
         image?: string;
       }[];
       onCancel: () => void;
+    }
+  | {
+      type: "edit_bot_username";
+      bot: Bot;
     };

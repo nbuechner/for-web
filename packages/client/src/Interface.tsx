@@ -21,7 +21,7 @@ import { useModals } from "@revolt/modal";
 import { Navigate, useBeforeLeave, useLocation } from "@revolt/routing";
 import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
-import { CircularProgress } from "@revolt/ui";
+import { LoadingScreen } from "@revolt/ui";
 
 import { SlideDrawer } from "../components/ui/components/navigation/SlideDrawer";
 import { Sidebar } from "./interface/Sidebar";
@@ -112,7 +112,7 @@ const Interface = (props: { children: JSX.Element }) => {
     <MessageCache client={client()}>
       <AppRoot ref={rootRef} class="app_root">
         <Titlebar />
-        <Switch fallback={<CircularProgress />}>
+        <Switch fallback={<LoadingScreen />}>
           <Match when={!isLoggedIn()}>
             <Navigate href="/login" />
           </Match>

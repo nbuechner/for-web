@@ -6,8 +6,8 @@ import { Server } from "stoat.js";
 import { css } from "styled-system/css";
 
 import { useClient } from "@revolt/client";
-import { CONFIGURATION } from "@revolt/common";
 import { useError } from "@revolt/i18n";
+import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import {
   Avatar,
@@ -27,9 +27,10 @@ export function EmojiList(props: { server: Server }) {
   const { t } = useLingui();
   const client = useClient();
   const { openModal } = useModals();
+  const instance = useInstance();
 
   function isDisabled() {
-    return props.server.emojis.length >= CONFIGURATION.MAX_EMOJI;
+    return props.server.emojis.length >= instance.globalLimits.server_emoji;
   }
 
   const editGroup = createFormGroup(
@@ -55,16 +56,13 @@ export function EmojiList(props: { server: Server }) {
     body.append("file", editGroup.controls.file.value![0]);
 
     const [key, value] = client().authenticationHeader;
-    const data: { id: string } = await fetch(
-      `${CONFIGURATION.DEFAULT_MEDIA_URL}/emojis`,
-      {
-        method: "POST",
-        body,
-        headers: {
-          [key]: value,
-        },
+    const data: { id: string } = await fetch(`${instance.mediaUrl}/emojis`, {
+      method: "POST",
+      body,
+      headers: {
+        [key]: value,
       },
-    ).then((res) => res.json());
+    }).then((res) => res.json());
 
     await props.server.createEmoji(data.id, {
       name: editGroup.controls.name.value,
@@ -89,6 +87,11 @@ export function EmojiList(props: { server: Server }) {
                 accept="image/*"
                 imageJustify={false}
                 allowRemoval={false}
+                maxSize={
+                  client().configuration?.features.limits.default
+                    .file_upload_size_limits["emojis"] ?? 5e5
+                }
+                hideErrors={true}
               />
             </Column>
             <Column grow>
@@ -99,6 +102,10 @@ export function EmojiList(props: { server: Server }) {
                 name="name"
                 control={editGroup.controls.name}
                 label={t`Emoji Name`}
+                pattern="[a-z0-9_]{1,32}"
+                helper={t`Lowercase letters, numbers and underscores only.`}
+                helper-on-focus={true}
+                autocomplete="off"
               />
 
               <Row align>
@@ -108,7 +115,8 @@ export function EmojiList(props: { server: Server }) {
                 <Switch
                   fallback={
                     <Trans>
-                      {CONFIGURATION.MAX_EMOJI - props.server.emojis.length}{" "}
+                      {instance.globalLimits.server_emoji -
+                        props.server.emojis.length}{" "}
                       emoji slots remaining
                     </Trans>
                   }

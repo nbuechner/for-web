@@ -5,7 +5,6 @@ import {
   Switch,
   createContext,
   createEffect,
-  createMemo,
   createSignal,
   onCleanup,
   onMount,
@@ -44,6 +43,7 @@ const callCardContext = createContext<(info?: Info) => void>();
 /** Voice call card context */
 export function VoiceCallCardContext(props: { children: JSX.Element }) {
   const voice = useVoice();
+  const inCall = () => !!voice.channel();
 
   const [mode, setMode] = createSignal<Mode>();
   const [info, setInfo] = createSignal<Info>();
@@ -100,26 +100,29 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
     events = null;
   }
 
-  const channel = createMemo(() => {
+  createEffect(() => {
     const inf = info();
-
     if (!ref) return;
     const sty = ref.style;
+    resetEvents();
 
     //Set mode based on state
-    if (inf?.pos && (!inf.drawer || inf.drawer === SlideState.SHOWN)) {
+    if (voice.fullscreen()) {
+      sty.transform = ``;
+      sty.width = `100%`;
+      setMode();
+    } else if (inf?.pos && (!inf.drawer || inf.drawer === SlideState.SHOWN)) {
       sty.transform = `translate(${inf.pos.x}px, ${inf.pos.y}px)`;
       sty.width = `${inf.pos.width}px`;
       setMode();
-    } else if (!voice.channel()) {
+    } else if (!inCall()) {
       const y = inf?.pos.y ?? ref.getBoundingClientRect().y;
       sty.transform = `translate(${innerWidth + 50}px, ${y}px)`;
       setMode();
     } else if (!mode()) setFloat("tr");
-
-    resetEvents();
-    return inf?.channel;
   });
+
+  const channel = () => info()?.channel;
 
   function setFloat(float: FloatType) {
     const sty = ref!.style,
@@ -132,17 +135,54 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
 
   onCleanup(resetEvents);
 
+  onMount(() => {
+    document
+      .getElementById("floating")
+      ?.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+          voice.toggleFullscreen(false);
+        }
+      });
+  });
+
+  createEffect(() => {
+    if (voice.fullscreen() && inCall()) {
+      if (
+        !document
+          .getElementById("floating")
+          ?.isSameNode(document.fullscreenElement)
+      ) {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        document.getElementById("floating")?.requestFullscreen();
+      }
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  });
+
   return (
     <callCardContext.Provider value={setInfo}>
       {props.children}
-      <Portal ref={document.getElementById("floating")! as HTMLDivElement}>
-        <Float ref={ref} mode={mode()} onPointerDown={mouseDown}>
+      <Portal mount={document.getElementById("floating")! as HTMLDivElement}>
+        <Float
+          ref={ref}
+          mode={mode()}
+          onPointerDown={mouseDown}
+          fullscreen={voice.fullscreen()}
+        >
           <Switch>
-            <Match when={mode()}>
+            <Match when={mode() && inCall()}>
               <VoiceCallCardPiP />
             </Match>
             <Match when={channel()}>
-              <VoiceCallCard channel={channel()!} />
+              <VoiceCallCard
+                channel={channel()!}
+                inCall={inCall()}
+                showCard={voice.showCard(channel()!)}
+                fullscreen={voice.fullscreen()}
+              />
             </Match>
           </Switch>
         </Float>
@@ -167,6 +207,15 @@ const Float = styled("div", {
         cursor: "grabbing",
         transition: "none",
       },
+    },
+    fullscreen: {
+      true: {
+        zIndex: 100,
+        height: "100vh",
+        top: 0,
+        // Width is set by floating logic in effect above
+      },
+      false: {},
     },
   },
   compoundVariants: [
@@ -225,41 +274,34 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
     return "136px"; // preview card height + padding
   };
 
-  return <div ref={ref!} style={{ height: spacerHeight(), "flex-shrink": "0", "pointer-events": "none" }} />;
+  return (
+    <div
+      ref={ref!}
+      style={{
+        height: spacerHeight(),
+        "flex-shrink": "0",
+        "pointer-events": "none",
+      }}
+    />
+  );
 }
 
 /**
  * Call card
  */
-function VoiceCallCard(props: { channel: Channel }) {
-  const voice = useVoice();
-  const inCall = () => !!voice.channel();
+function VoiceCallCard(props: {
+  channel: Channel;
+  inCall: boolean;
+  showCard: boolean;
+  fullscreen: boolean;
+}) {
   const isMobile = useIsMobile();
-  const [cardHeight, setCardHeight] = createSignal(isMobile() ? "22vh" : "40vh");
+  const [cardHeight, setCardHeight] = createSignal(
+    isMobile() ? "22vh" : "40vh",
+  );
   const [dismissed, setDismissed] = createSignal(false);
 
   let viewRef: HTMLDivElement | undefined;
-
-  onMount(() => {
-    viewRef?.addEventListener("fullscreenchange", () => {
-      if (!document.fullscreenElement) {
-        voice.toggleFullscreen(false);
-      }
-    });
-  });
-
-  createEffect(() => {
-    if (voice.fullscreen() && inCall()) {
-      if (!viewRef?.isSameNode(document.fullscreenElement)) {
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        }
-        viewRef?.requestFullscreen();
-      }
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-  });
 
   function onResizePointerDown(e: PointerEvent) {
     e.preventDefault();
@@ -288,15 +330,18 @@ function VoiceCallCard(props: { channel: Channel }) {
   }
 
   return (
-    <Show when={voice.showCard(props.channel) && !dismissed()}>
-      <Base>
+    <Show when={props.showCard && !dismissed()}>
+      <Base fullscreen={props.fullscreen}>
         <Card
           ref={viewRef}
-          active={inCall()}
-          style={inCall() ? { height: cardHeight() } : {}}
+          active={props.inCall}
+          fullscreen={props.fullscreen}
+          style={
+            props.inCall && !props.fullscreen ? { height: cardHeight() } : {}
+          }
         >
           <Show
-            when={inCall()}
+            when={props.inCall}
             fallback={
               <VoiceCallCardPreview
                 channel={props.channel}
@@ -306,7 +351,7 @@ function VoiceCallCard(props: { channel: Channel }) {
           >
             <VoiceCallCardActiveRoom />
           </Show>
-          <Show when={inCall()}>
+          <Show when={props.inCall && !props.fullscreen}>
             <CardResizeHandle onPointerDown={onResizePointerDown} />
           </Show>
         </Card>
@@ -330,6 +375,15 @@ const Base = styled("div", {
     display: "flex",
     alignItems: "center",
     flexDirection: "column",
+  },
+  variants: {
+    fullscreen: {
+      true: {
+        top: 0,
+        height: "100%",
+        padding: 0,
+      },
+    },
   },
 });
 
@@ -382,7 +436,6 @@ const Card = styled("div", {
     active: {
       true: {
         width: "100%",
-        height: "40vh",
       },
       false: {
         width: "360px",
@@ -390,8 +443,25 @@ const Card = styled("div", {
         cursor: "pointer",
       },
     },
+    fullscreen: {
+      true: {
+        height: "100%",
+        borderRadius: 0,
+      },
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      active: [true],
+      fullscreen: [false],
+      css: {
+        height: "40vh",
+      },
+    },
+  ],
   defaultVariants: {
     active: false,
+    fullscreen: false,
   },
 });

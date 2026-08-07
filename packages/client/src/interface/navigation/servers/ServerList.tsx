@@ -6,12 +6,14 @@ import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { useClient } from "@revolt/client";
-import { CONFIGURATION, useDevice } from "@revolt/common";
+import { useDevice } from "@revolt/common";
+import { useInstance } from "@revolt/instance";
 import { KeybindAction, createKeybind } from "@revolt/keybinds";
 import { useModals } from "@revolt/modal";
 import { useNavigate } from "@revolt/routing";
 import { useState } from "@revolt/state";
 import { Avatar, Column, Text, Time, Unreads, UserStatus } from "@revolt/ui";
+import { VoiceStatus } from "@revolt/ui/components/design/VoiceStatus";
 
 import MdAdd from "@material-design-icons/svg/filled/add.svg?component-solid";
 import MdExplore from "@material-design-icons/svg/filled/explore.svg?component-solid";
@@ -20,7 +22,6 @@ import MdSettings from "@material-design-icons/svg/filled/settings.svg?component
 
 import { Tooltip } from "../../../../components/ui/components/floating";
 import { Draggable } from "../../../../components/ui/components/utils/Draggable";
-
 import { UserMenu } from "./UserMenu";
 
 interface Props {
@@ -71,6 +72,7 @@ export const ServerList = (props: Props) => {
   const { isMobile } = useDevice();
   const { openModal } = useModals();
   const { t } = useLingui();
+  const instance = useInstance();
 
   const navigateServer = (byOffset: number) => {
     const serverId = props.selectedServer();
@@ -267,7 +269,13 @@ export const ServerList = (props: Props) => {
                     size={42}
                     src={entry.item.iconURL}
                     holepunch={
-                      entry.item.mentions.length ? "top-right" : "none"
+                      entry.item.mentions.length
+                        ? entry.item.voiceStatus !== "none"
+                          ? "right"
+                          : "top-right"
+                        : entry.item.voiceStatus !== "none"
+                          ? "bottom-right"
+                          : "none"
                     }
                     overlay={
                       <>
@@ -280,6 +288,11 @@ export const ServerList = (props: Props) => {
                           <Unreads.Graphic
                             count={entry.item.mentions.length}
                             unread
+                          />
+                        </Show>
+                        <Show when={entry.item.voiceStatus !== "none"}>
+                          <VoiceStatus.Graphic
+                            status={entry.item.voiceStatus}
                           />
                         </Show>
                       </>
@@ -300,7 +313,7 @@ export const ServerList = (props: Props) => {
             <Avatar size={42} fallback={<MdAdd />} />
           </a>
         </Tooltip>
-        <Show when={CONFIGURATION.IS_STOAT}>
+        <Show when={instance.isStoat}>
           <Tooltip placement="right" content={"Find new servers to join"}>
             <a
               href={state.layout.getLastActiveDiscoverPath()}

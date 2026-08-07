@@ -7,7 +7,7 @@ import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
 import { useSmartParams } from "@revolt/routing";
 import { useState } from "@revolt/state";
-import { dismissFloatingElements, Slider, Text } from "@revolt/ui";
+import { Slider, Text } from "@revolt/ui";
 
 import MdAccountCircle from "@material-design-icons/svg/outlined/account_circle.svg?component-solid";
 import MdAddCircleOutline from "@material-design-icons/svg/outlined/add_circle_outline.svg?component-solid";
@@ -40,6 +40,7 @@ import { NotificationContextMenu } from "./shared/NotificationContextMenu";
  */
 export function UserContextMenu(props: {
   user: User;
+  onClose?: () => void;
   channel?: Channel;
   member?: ServerMember;
   contextMessage?: Message;
@@ -60,7 +61,8 @@ export function UserContextMenu(props: {
    * Open direct message channel
    */
   function openDm() {
-    props.user.openDM().then((channel) => navigate(channel.url));
+    props.user.openDM().then((channel) => navigate(channel.path));
+    props.onClose?.();
   }
 
   /**
@@ -89,14 +91,10 @@ export function UserContextMenu(props: {
    * Open user profile
    */
   function openProfile() {
-    if (isProfileOpen()) return;
-
     openModal({
       type: "user_profile",
       user: props.user,
     });
-
-    dismissFloatingElements();
   }
 
   /**
@@ -203,7 +201,7 @@ export function UserContextMenu(props: {
    */
   function openAdminPanel() {
     window.open(
-      `https://old-admin.stoatinternal.com/panel/inspect/user/${props.user.id}`,
+      `https://admin.stoatinternal.com/panel/inspect/user/${props.user.id}`,
       "_blank",
     );
   }
@@ -305,7 +303,7 @@ export function UserContextMenu(props: {
       {/* Voice controls */}
       <Show when={props.inVoice && !props.user.self && !props.isScreenshare}>
         <ContextMenuButton
-          onMouseDown={(e) => e.stopImmediatePropagation()}
+          onpointerdown={(e) => e.stopImmediatePropagation()}
           onClick={(e) => e.stopImmediatePropagation()}
         >
           <Text class="label">
@@ -343,7 +341,7 @@ export function UserContextMenu(props: {
       </Show>
       <Show when={props.isScreenshare && !props.user.self}>
         <ContextMenuButton
-          onMouseDown={(e) => e.stopImmediatePropagation()}
+          onpointerdown={(e) => e.stopImmediatePropagation()}
           onClick={(e) => e.stopImmediatePropagation()}
         >
           <Text class="label">
@@ -384,10 +382,12 @@ export function UserContextMenu(props: {
       </Show>
 
       {/* Quick actions: Profile, Message, Mention */}
-      <ContextMenuButton icon={MdAccountCircle} onClick={openProfile}>
-        <Trans>Profile</Trans>
-      </ContextMenuButton>
-      <Show when={props.user.relationship === "Friend"}>
+      <Show when={!isProfileOpen()}>
+        <ContextMenuButton icon={MdAccountCircle} onClick={openProfile}>
+          <Trans>Profile</Trans>
+        </ContextMenuButton>
+      </Show>
+      <Show when={props.user.relationship === "Friend" || props.user.bot}>
         <ContextMenuButton icon={MdChat} onClick={openDm}>
           <Trans>Message</Trans>
         </ContextMenuButton>
@@ -527,9 +527,11 @@ export function UserContextMenu(props: {
             <Trans>Unblock user</Trans>
           </ContextMenuButton>
         </Show>
-        <ContextMenuButton icon={MdReport} onClick={reportUser} destructive>
-          <Trans>Report user</Trans>
-        </ContextMenuButton>
+        <Show when={!props.user.privileged}>
+          <ContextMenuButton icon={MdReport} onClick={reportUser} destructive>
+            <Trans>Report user</Trans>
+          </ContextMenuButton>
+        </Show>
       </Show>
 
       {/* Developer tools */}

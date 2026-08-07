@@ -58,7 +58,17 @@ export function CompositionMediaPicker(props: Props) {
   let altRef: HTMLDivElement | undefined;
 
   return (
-    <CompositionMediaPickerContext.Provider value={props}>
+    <CompositionMediaPickerContext.Provider
+      value={{
+        ...props,
+        // close the picker once a GIF is sent
+        // (technically any message, but what else are you gonna be sending out the gif picker)
+        onMessage: (content) => {
+          props.onMessage(content);
+          setShow(undefined);
+        },
+      }}
+    >
       {props.children({
         ref: setAnchor,
         onClickGif: (_, ref) => {
@@ -182,7 +192,8 @@ const Base = styled("div", {
     width: "400px",
     height: "400px",
     maxWidth: "100%",
-    maxHeight: "calc(100% - 72px)",
+    maxHeight: "calc(100% - max(env(keyboard-inset-height), 72px))",
+    marginBottom: "env(keyboard-inset-height)",
   },
 });
 

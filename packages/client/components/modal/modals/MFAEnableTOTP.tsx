@@ -75,8 +75,7 @@ export function MFAEnableTOTPModal(
         {
           text: <Trans>Cancel</Trans>,
           onClick() {
-            props.callback();
-            props.onClose();
+            props.reject?.("MFACancelled");
           },
         },
         {
