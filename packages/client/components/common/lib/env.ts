@@ -66,6 +66,15 @@ export default {
     ? `${window.location.origin}/gifbox`
     : getEnv("VITE_DEV_GIFBOX_URL"),
   /**
+   * Klipy API key for GIF search (replaces defunct Tenor/gifbox — the
+   * self-hosted gifbox service itself still proxies Tenor internally, so it
+   * broke the same day Tenor did; Klipy is fetched directly from the client
+   * instead, no per-instance service or auth header needed).
+   */
+  KLIPY_API_KEY:
+    getEnv("VITE_KLIPY_API_KEY") ??
+    "qmoK3qkc7wWb4c3r3aNHd5Gs14O4yzuMEp53YVhvkxENcaceljH6VBNkd3dRldQl",
+  /**
    * RNNoise worklet CDN host location. Defaults to blank, which uses the url provided by the livekit-rnnoise-processor package.
    */
   RNNOISE_WORKLET_CDN_URL: getEnv("VITE_RNNOISE_WORKLET_CDN_URL"),

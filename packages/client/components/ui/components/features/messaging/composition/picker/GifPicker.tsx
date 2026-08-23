@@ -14,8 +14,7 @@ import { Trans } from "@lingui-solid/solid/macro";
 import { useQuery } from "@tanstack/solid-query";
 import { styled } from "styled-system/jsx";
 
-import { useClient } from "@revolt/client";
-import { useInstance } from "@revolt/instance";
+import env from "@revolt/common/lib/env";
 import { useState } from "@revolt/state";
 import {
   Button,
@@ -48,8 +47,26 @@ type GifCategory = { title: string; image: string };
 
 type GifResult = {
   url: string;
-  media_formats: Record<"webm" | "tinywebm", { url: string }>;
+  previewUrl: string;
 };
+
+const KLIPY_BASE = `https://api.klipy.com/api/v1/${env.KLIPY_API_KEY}`;
+
+function klipyFetch(path: string) {
+  return fetch(`${KLIPY_BASE}${path}`).then((r) => r.json());
+}
+
+function mapGif(item: {
+  file: {
+    hd: { gif: { url: string } };
+    sm: { webm?: { url: string }; gif: { url: string } };
+  };
+}): GifResult {
+  return {
+    url: item.file.hd.gif.url,
+    previewUrl: item.file.sm.webm?.url ?? item.file.sm.gif.url,
+  };
+}
 
 const FilterContext = createContext<(value: string) => void>();
 
@@ -322,25 +339,19 @@ type CategoryItem =
     };
 
 function Categories() {
-  const client = useClient();
-  const instance = useInstance();
-
   const setFilter = useContext(FilterContext);
 
   const trendingCategories = useQuery<GifCategory[]>(() => ({
-    queryKey: ["trendingGifCategories"],
-    queryFn: () => {
-      const [authHeader, authHeaderValue] = client()!.authenticationHeader;
-
-      return fetch(`${instance.gifboxUrl}/categories?locale=en_US`, {
-        headers: {
-          [authHeader]: authHeaderValue,
-        },
-      }).then((r) => {
-        if (!r.ok) throw new Error(`Gifbox categories failed: ${r.status}`);
-        return r.json();
-      });
-    },
+    queryKey: ["klipyCategories"],
+    queryFn: () =>
+      klipyFetch("/gifs/categories?locale=en_US").then((r) =>
+        r.data.categories.map(
+          (c: { category: string; preview_url: string }) => ({
+            title: c.category,
+            image: c.preview_url,
+          }),
+        ),
+      ),
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   }));
@@ -441,32 +452,16 @@ const Label = styled("span", {
 });
 
 function GifSearch(props: { query: string }) {
-  const client = useClient();
-  const instance = useInstance();
-
   const { onMessage } = useContext(CompositionMediaPickerContext);
 
   const search = useQuery<GifResult[]>(() => ({
-    queryKey: ["gifs", props.query],
+    queryKey: ["klipyGifs", props.query],
     queryFn: () => {
-      const [authHeader, authHeaderValue] = client()!.authenticationHeader;
-
-      return fetch(
-        `${instance.gifboxUrl}/` +
-          (props.query === "trending"
-            ? `trending?locale=en_US`
-            : `search?locale=en_US&query=${encodeURIComponent(props.query)}`),
-        {
-          headers: {
-            [authHeader]: authHeaderValue,
-          },
-        },
-      )
-        .then((r) => {
-          if (!r.ok) throw new Error(`Gifbox search failed: ${r.status}`);
-          return r.json();
-        })
-        .then((resp) => resp.results);
+      const path =
+        props.query === "trending"
+          ? "/gifs/trending?locale=en_US&per_page=24"
+          : `/gifs/search?locale=en_US&per_page=24&q=${encodeURIComponent(props.query)}`;
+      return klipyFetch(path).then((r) => r.data.data.map(mapGif));
     },
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
@@ -524,7 +519,7 @@ function GifSearch(props: { query: string }) {
                   loop
                   autoplay
                   muted
-                  src={gif.media_formats.tinywebm.url}
+                  src={gif.previewUrl}
                 />
               </GifTile>
             )}
