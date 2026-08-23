@@ -57,7 +57,7 @@ export default class Instance {
     const hostUrl = new URL(`https://${host}`);
     this.origin = hostUrl.origin;
     this.isStoat = host === STOAT_HOST;
-    this.#base = this.isStoat ? "" : `/i/${host}`;
+    this.#base = host === DefaultHost ? "" : `/i/${host}`;
     this.#nav = nav;
   }
 
@@ -78,7 +78,9 @@ export default class Instance {
    * @param base Defaults to the base path of this instance
    */
   href = (path: string, pathOnly?: boolean, base?: string) =>
-    (pathOnly ? "" : StoatOrigin) + (base ? `/i/${base}` : this.#base) + path;
+    (pathOnly ? "" : (this.isStoat || base ? StoatOrigin : this.origin)) +
+    (base ? `/i/${base}` : this.#base) +
+    path;
 
   /** Convert path to relative form, stripping instance prefix (if any)
    * @param path Defaults to `location.pathname` (non-reactive,
