@@ -33,6 +33,28 @@ export function useError() {
 
     // TODO: HTTP errors
 
+    // handle browser media-device errors (getUserMedia/getDisplayMedia) - these
+    // come back as DOMExceptions whose .message text is browser-specific and,
+    // in Firefox's case, famously unhelpful ("The object can not be found
+    // here." for a missing camera) - map the standard .name values instead of
+    // falling through to the raw pass-through below
+    if (error instanceof DOMException) {
+      switch (error.name) {
+        case "NotFoundError":
+          return t`No camera or microphone was found. Please check that a device is connected.`;
+        case "NotAllowedError":
+          return t`Camera/microphone access was denied. Please check your browser's permissions for this site.`;
+        case "NotReadableError":
+          return t`Could not access your camera or microphone - it may already be in use by another application.`;
+        case "OverconstrainedError":
+          return t`Your camera or microphone doesn't support the requested settings.`;
+        case "AbortError":
+          return t`Access to your camera or microphone was interrupted. Please try again.`;
+        case "SecurityError":
+          return t`Camera/microphone access is blocked. This page must be loaded over HTTPS.`;
+      }
+    }
+
     // handle Revolt API errors
     if (
       (error as { type?: never } | undefined)?.type &&
