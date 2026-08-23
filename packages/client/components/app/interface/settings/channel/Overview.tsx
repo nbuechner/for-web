@@ -1,7 +1,7 @@
 import { createFormControl, createFormGroup } from "solid-forms";
 import { Match, Show, Switch } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import type { API } from "stoat.js";
 
 import { useClient } from "@revolt/client";
@@ -111,10 +111,7 @@ export default function ChannelOverview(props: ChannelSettingsProps) {
           <Form2.FileInput
             control={editGroup.controls.icon}
             accept="image/*"
-            maxSize={
-              client().configuration?.features.limits.default
-                .file_upload_size_limits["icons"] ?? 2.5e6
-            }
+            maxSize={instance.limits().file_upload_size_limits["icons"]}
           />
           <Form2.TextField
             minlength={1}

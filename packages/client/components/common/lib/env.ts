@@ -1,5 +1,5 @@
 export const STOAT_HOST = "stoat.chat";
-export const STOAT_API = "https://api.stoat.chat";
+const STOAT_API = "https://api.stoat.chat";
 
 /** App `stoat.json` endpoint format */
 export interface AppConfig {
@@ -18,6 +18,29 @@ const getEnv = (name: string, devOnly?: boolean) =>
 const INJECTED_HOST = getEnv("VITE_DEV_HOST", true) || getEnv("VITE_HOST");
 const inBrowser = typeof window !== "undefined";
 
+/** If host is Stoat, normalize to STOAT_HOST, else return host */
+export const normalizeHost = (host: string) =>
+  [
+    // historically...
+    "api.revolt.chat",
+    "beta.revolt.chat",
+    "revolt.chat",
+    // ... and now:
+    "api.stoat.chat",
+    "beta.stoat.chat",
+  ].includes(host)
+    ? STOAT_HOST
+    : host;
+
+const isStoatOfficialAPI = (api: string) =>
+  [
+    "https://api.revolt.chat",
+    "https://api.stoat.chat",
+    "https://stoat.chat/api",
+    "https://beta.stoat.chat/api",
+    "canary-api.stoat.chat",
+  ].includes(api);
+
 /**
  * A self-hosted build bakes one absolute default-domain URL into the bundle
  * at container start (see docker/inject.js). That's only correct when the
@@ -32,15 +55,15 @@ const useSameOrigin = Boolean(INJECTED_HOST) && inBrowser;
 
 const DEFAULT_HOST = useSameOrigin
   ? window.location.host
-  : INJECTED_HOST || STOAT_HOST;
+  : normalizeHost(INJECTED_HOST || STOAT_HOST);
 
 const DEFAULT_API_URL =
   getEnv("VITE_DEV_API_URL", true) ||
   (useSameOrigin ? `${window.location.origin}/api` : getEnv("VITE_API_URL")) ||
   STOAT_API;
 
-if (DEFAULT_API_URL !== STOAT_API && DEFAULT_HOST === STOAT_HOST)
-  throw "VITE_HOST required when VITE_API_URL is set!";
+if (!isStoatOfficialAPI(DEFAULT_API_URL) && DEFAULT_HOST === STOAT_HOST)
+  console.error("VITE_HOST required when VITE_API_URL is set!");
 
 const wsOrigin = () =>
   (window.location.protocol === "https:" ? "wss:" : "ws:") +

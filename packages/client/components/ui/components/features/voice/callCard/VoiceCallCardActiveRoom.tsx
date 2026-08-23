@@ -1,4 +1,4 @@
-import { useLingui } from "@lingui-solid/solid/macro";
+import { useLingui } from "@lingui/solid/macro";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { createEffect, createSignal, For, onMount, Show } from "solid-js";
 import { TrackLoop } from "solid-livekit-components";

@@ -22,7 +22,7 @@ import { Row } from "@revolt/ui/components/layout";
 
 import emojiMapping from "../../../../../emojiMapping.json";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import {
   CompositionMediaPickerContext,
   compositionContent,
@@ -155,11 +155,6 @@ export function EmojiPicker() {
         variant="outlined"
         placeholder="Search for emojis..."
         value={filter()}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        }}
         onInput={(e) => setFilter(e.currentTarget.value)}
       />
       <Row gap={"none"} class={compositionContent()}>

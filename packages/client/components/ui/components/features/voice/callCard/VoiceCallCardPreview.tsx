@@ -1,14 +1,13 @@
 import { For, Show } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { Channel } from "stoat.js";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { useUsers } from "@revolt/markdown/users";
 import { useVoice } from "@revolt/rtc";
-import { Avatar, Ripple, Text } from "@revolt/ui/components/design";
-import { Row } from "@revolt/ui/components/layout";
+import { Avatar, Ripple, Text, typography } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 /**
@@ -29,7 +28,13 @@ export function VoiceCallCardPreview(props: {
       .map((user) => user?.username)
       .filter((x) => x);
 
-    return names.length ? t`With ${names.join(", ")}` : t`Start the call`;
+    if (names.length > 3) {
+      return t`with ${names.length} others`;
+    } else if (names.length && names.length !== 0) {
+      return t`with ${names.join(", ")}`;
+    } else {
+      return t`Start the call`;
+    }
   }
 
   return (
@@ -47,13 +52,13 @@ export function VoiceCallCardPreview(props: {
           <Symbol size={18}>close</Symbol>
         </button>
       </Show>
-      <Row>
+      <Avatars>
         <For each={users()} fallback={<Symbol size={24}>voice_chat</Symbol>}>
           {(user) => (
             <Avatar size={24} src={user?.avatar} fallback={user?.username} />
           )}
         </For>
-      </Row>
+      </Avatars>
       <Text class="title" size="large">
         <Show
           when={voice.state() === "READY"}
@@ -62,7 +67,9 @@ export function VoiceCallCardPreview(props: {
           <Trans>Join the voice channel</Trans>
         </Show>
       </Text>
-      <Text class="body">{subtext()}</Text>
+      <p class={css(typography.raw({ class: "body" }), LineClampText)}>
+        {subtext()}
+      </p>
     </Preview>
   );
 }
@@ -103,4 +110,22 @@ const dismissButton = css({
   _hover: {
     background: "rgba(0,0,0,0.5)",
   },
+});
+
+const Avatars = styled("div", {
+  base: {
+    display: "flex",
+    flexShrink: 0,
+    height: "fit-content",
+
+    "& :not(:first-child)": {
+      marginInlineStart: "-9px",
+    },
+  },
+});
+
+const LineClampText = css.raw({
+  lineClamp: "2",
+  overflow: "hidden",
+  display: "-webkit-box",
 });
