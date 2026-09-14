@@ -216,7 +216,9 @@ function Participants() {
           class={voice.focusId() ? scrollableStyles({ direction: "x" }) : ""}
           style={{
             "--vc-tile-width": tileWidth(),
-            ...(voice.focusId() && voice.showBar() ? { height: stripHeight() } : {}),
+            ...(voice.focusId() && voice.showBar()
+              ? { height: stripHeight() }
+              : {}),
           }}
         >
           <TrackLoop
