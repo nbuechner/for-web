@@ -100,6 +100,7 @@ export function DraftMessage(props: Props) {
       <For each={props.draft.files}>
         {(id) => {
           const file = state.draft.getFile(id);
+          const spoiler = () => state.draft.isFileSpoiler(id);
 
           return (
             <>
@@ -113,7 +114,12 @@ export function DraftMessage(props: Props) {
                     width={file.dimensions![0]}
                     height={file.dimensions![1]}
                   >
-                    <img src={file.dataUri} />
+                    <PreviewWrapper>
+                      <PreviewImage src={file.dataUri} spoiler={spoiler()} />
+                      <Show when={spoiler()}>
+                        <SpoilerLabel>Spoiler</SpoilerLabel>
+                      </Show>
+                    </PreviewWrapper>
                   </SizedContent>
                 </Match>
               </Switch>
@@ -160,5 +166,61 @@ const BreakText = styled("div", {
       overflowY: "hidden",
       maxHeight: "100vh",
     },
+  },
+});
+
+/**
+ * Positioning context for the image + spoiler label, independent of whatever
+ * SizedContent itself does internally
+ */
+const PreviewWrapper = styled("div", {
+  base: {
+    position: "relative",
+    display: "grid",
+
+    "& > img": {
+      gridArea: "1 / 1",
+    },
+  },
+});
+
+/**
+ * Attachment preview image, blurred while marked as spoiler
+ */
+const PreviewImage = styled("img", {
+  base: {
+    display: "block",
+    width: "100%",
+    height: "100%",
+    transition: "var(--transitions-fast) filter",
+  },
+  variants: {
+    spoiler: {
+      true: {
+        filter: "blur(28px)",
+      },
+    },
+  },
+});
+
+/**
+ * Centered label shown over a spoiler-marked upload preview
+ */
+const SpoilerLabel = styled("div", {
+  base: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    zIndex: 2,
+    transform: "translate(-50%, -50%)",
+
+    padding: "4px var(--gap-sm)",
+    borderRadius: "var(--borderRadius-lg)",
+    border: "none",
+
+    color: "var(--md-sys-color-on-surface)",
+    background: "var(--md-sys-color-surface)",
+
+    textTransform: "uppercase",
   },
 });
