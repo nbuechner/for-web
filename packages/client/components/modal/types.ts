@@ -5,7 +5,6 @@ import {
   Channel,
   Client,
   Emoji,
-  File,
   ImageEmbed,
   Message,
   MFA,
@@ -17,15 +16,18 @@ import {
   ServerMember,
   ServerRole,
   Session,
+  File as StoatFile,
   User,
   VideoEmbed,
 } from "stoat.js";
 
 import type { SettingsConfigurations } from "@revolt/app";
 import { CategoryData } from "@revolt/app/menus/CategoryContextMenu";
+import { ServerFolder } from "@revolt/state/stores/ServerFolders";
 import { ScreenShareQualityName } from "@revolt/state/stores/Voice";
 
 import type { ChangelogResponse } from "./modals/Changelog";
+import { CropProcessOptions } from "./modals/CropProcess";
 
 export type Modals =
   | {
@@ -167,7 +169,7 @@ export type Modals =
       type: "image_viewer";
       embed?: ImageEmbed;
       gif?: VideoEmbed;
-      file?: File;
+      file?: StoatFile;
     }
   | {
       type: "join_server";
@@ -319,6 +321,10 @@ export type Modals =
       category: CategoryData;
     }
   | {
+      type: "edit_server_folder";
+      folder: ServerFolder;
+    }
+  | {
       type: "remove_member";
       group: Channel;
       user: User;
@@ -358,4 +364,19 @@ export type Modals =
   | {
       type: "edit_bot_username";
       bot: Bot;
+    }
+  | {
+      type: "edit_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "delete_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "crop";
+      options: CropProcessOptions;
+      files: File[];
+      resolve: (files: File[] | null) => void;
+      maxSize: number | undefined;
     };

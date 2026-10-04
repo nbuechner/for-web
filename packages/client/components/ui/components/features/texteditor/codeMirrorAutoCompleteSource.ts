@@ -9,31 +9,34 @@ import { User } from "stoat.js";
 
 import { useClient } from "@revolt/client";
 import {
+  isRegionalIndicator,
   UNICODE_EMOJI_PACK_PUA,
+  UNICODE_ZWNJ,
   unicodeEmojiUrl,
 } from "@revolt/markdown/emoji/UnicodeEmoji";
 import { useState } from "@revolt/state";
 
-import emojiMapping from "../../../emojiMapping.json";
 import { AutoCompleteSearchSpace } from "../../utils/autoComplete";
 
+import { EMOJI_KEYS, getEmojiByShorthand } from "@revolt/ui/emojis";
 import { isInCodeBlock } from "./codeMirrorCommon";
 
-const EMOJI_KEYS = Object.keys(emojiMapping).sort();
-const MAPPED_EMOJI_KEYS = EMOJI_KEYS.map(
-  (id) =>
-    ({
-      type: "emoji",
-      label: `:${id}:`,
-      apply: emojiMapping[id as keyof typeof emojiMapping],
-    }) as Completion,
-);
+const MAPPED_EMOJI_KEYS = EMOJI_KEYS.values()
+  .toArray()
+  .map(
+    (id) =>
+      ({
+        type: "emoji",
+        label: `:${id}:`,
+        apply: getEmojiByShorthand(id)?.emoji,
+      }) as Completion,
+  );
 
-const RE_match = /(?<!\w)[:@%#]\w*/;
-const RE_emojiValidFor = /(?<!\w):\w*/;
-const RE_mentionValidFor = /(?<!\w)@\w*/;
-const RE_roleValidFor = /(?<!\w)@\w*/;
-const RE_channelValidFor = /(?<!\w)#\w*/;
+const RE_match = /(?<!\p{L}\w)[:@%#][\p{L}\w\-+]*/u;
+const RE_emojiValidFor = /(?<!\p{L}\w):[\p{L}\w\-+]*/u;
+const RE_mentionValidFor = /(?<!\p{L}\w)@[\p{L}\w\-+]*/u;
+const RE_roleValidFor = /(?<!\p{L}\w)@[\p{L}\w\-+]*/u;
+const RE_channelValidFor = /(?<!\p{L}\w)#[\p{L}\w\-+]*/u;
 
 export function codeMirrorAutoCompleteSource(
   searchSpace: Accessor<AutoCompleteSearchSpace>,
@@ -45,7 +48,7 @@ export function codeMirrorAutoCompleteSource(
     return ([] as Completion[]).concat(
       MAPPED_EMOJI_KEYS.map((emoji) => ({
         ...emoji,
-        apply: `${UNICODE_EMOJI_PACK_PUA[state.settings.getValue("appearance:unicode_emoji")!] ?? ""}${emoji.apply as string}`,
+        apply: `${UNICODE_EMOJI_PACK_PUA[state.settings.getValue("appearance:unicode_emoji")!] ?? ""}${isRegionalIndicator(emoji.apply as string) ? UNICODE_ZWNJ : ""}${emoji.apply as string}`,
         url: unicodeEmojiUrl(
           state.settings.getValue("appearance:unicode_emoji"),
           emoji.apply as string,

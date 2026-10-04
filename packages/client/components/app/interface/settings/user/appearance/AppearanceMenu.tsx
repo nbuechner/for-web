@@ -68,7 +68,7 @@ export function AppearanceMenu() {
           Colours
         </Text>
 
-        <Row justify="stretch">
+        <Row gap="xs" justify="stretch">
           <Button
             group="connected-start"
             groupActive={state.theme.mode === "light"}
@@ -92,7 +92,7 @@ export function AppearanceMenu() {
           </Button>
         </Row>
 
-        {/* <Row justify="stretch">
+        {/* <Row gap="xs justify="stretch">
           <Button
             group="connected-start"
             groupActive={state.theme.preset === "stoat"}
@@ -180,7 +180,9 @@ export function AppearanceMenu() {
           </div> */}
           </Row>
 
-          <Row justify="stretch" wrap>
+          {/* TODO: Cursed on mobile; may need to be replaced
+          with FloatingSelect / similar on small screens */}
+          <Row gap="xs" justify="stretch" wrap>
             <Button
               size="xs"
               group="connected-start"
@@ -215,7 +217,7 @@ export function AppearanceMenu() {
             </Button>
           </Row>
 
-          <Row justify="stretch" wrap>
+          <Row gap="xs" justify="stretch" wrap>
             <Button
               size="xs"
               group="connected-start"

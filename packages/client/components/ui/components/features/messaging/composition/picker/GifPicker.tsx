@@ -5,6 +5,7 @@ import {
   Suspense,
   Switch,
   createContext,
+  createEffect,
   createMemo,
   createSignal,
   useContext,
@@ -14,6 +15,7 @@ import { Trans } from "@lingui/solid/macro";
 import { useQuery } from "@tanstack/solid-query";
 import { styled } from "styled-system/jsx";
 
+import { debounce, useDevice } from "@revolt/common";
 import env from "@revolt/common/lib/env";
 import { useState } from "@revolt/state";
 import {
@@ -71,9 +73,20 @@ function mapGif(item: {
 const FilterContext = createContext<(value: string) => void>();
 
 export function GifPicker() {
+  const { isMobile } = useDevice();
   const [filter, setFilter] = createSignal("");
+  const [debouncedFilter, setDebouncedFilter] = createSignal("");
 
-  const fliterLowercase = () => filter().toLowerCase();
+  const clearFilter = () => {
+    setFilter("");
+    setDebouncedFilter("");
+  };
+  const delayedSetFilter = debounce(setDebouncedFilter, 250);
+  createEffect(() => {
+    delayedSetFilter(filter());
+  });
+
+  const debouncedFilterLowercase = () => debouncedFilter().toLowerCase();
 
   return (
     <Stack>
@@ -90,18 +103,18 @@ export function GifPicker() {
             <IconButton
               variant="standard"
               aria-label="Back to categories"
-              onPress={() => setFilter("")}
+              onPress={clearFilter}
             >
               <Symbol>arrow_back</Symbol>
             </IconButton>
           </span>
         </Show>
         <TextField
-          autoFocus
+          autoFocus={!isMobile}
           variant="outlined"
           placeholder="Search for GIFs..."
           value={filter()}
-          onChange={(e) => setFilter(e.currentTarget.value)}
+          onInput={(e) => setFilter(e.currentTarget.value)}
         />
       </SearchArea>
       <Suspense fallback={<Loader />}>
@@ -112,8 +125,8 @@ export function GifPicker() {
             </FilterContext.Provider>
           }
         >
-          <Match when={fliterLowercase()}>
-            <GifSearch query={fliterLowercase()} />
+          <Match when={debouncedFilterLowercase()}>
+            <GifSearch query={debouncedFilterLowercase()} />
           </Match>
         </Switch>
       </Suspense>

@@ -21,17 +21,21 @@ import { CreateOrJoinServerModal } from "./modals/CreateOrJoinServer";
 import { CreateRoleModal } from "./modals/CreateRole";
 import { CreateServerModal } from "./modals/CreateServer";
 import { CreateWebhookModal } from "./modals/CreateWebhook";
+import { CropModal } from "./modals/CropProcess";
 import { CustomStatusModal } from "./modals/CustomStatus";
 import { DeleteBotModal } from "./modals/DeleteBot";
 import { DeleteCategoryModal } from "./modals/DeleteCategory";
 import { DeleteChannelModal } from "./modals/DeleteChannel";
+import { DeleteEmojiModal } from "./modals/DeleteEmoji";
 import { DeleteMessageModal } from "./modals/DeleteMessage";
 import { DeleteRoleModal } from "./modals/DeleteRole";
 import { DeleteServerModal } from "./modals/DeleteServer";
 import { EditBotUsernameModal } from "./modals/EditBotUsername";
 import { EditCategoryModal } from "./modals/EditCategory";
 import { EditEmailModal } from "./modals/EditEmail";
+import { EditEmojiModal } from "./modals/EditEmoji";
 import { EditPasswordModal } from "./modals/EditPassword";
+import { EditServerFolderModal } from "./modals/EditServerFolder";
 import { EditUsernameModal } from "./modals/EditUsername";
 import { EmojiPreviewModal } from "./modals/EmojiPreview";
 import { Error2Modal } from "./modals/Error2";
@@ -190,6 +194,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <ResetBotTokenModal {...modalProps} />;
     case "edit_category":
       return <EditCategoryModal {...modalProps} />;
+    case "edit_server_folder":
+      return <EditServerFolderModal {...modalProps} />;
     case "remove_member":
       return <RemoveMemberModal {...modalProps} />;
     case "pin_message":
@@ -204,6 +210,12 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <TimeoutMemberModal {...modalProps} />;
     case "remove_timeout":
       return <RemoveTimeoutModal {...modalProps} />;
+    case "edit_emoji":
+      return <EditEmojiModal {...modalProps} />;
+    case "delete_emoji":
+      return <DeleteEmojiModal {...modalProps} />;
+    case "crop":
+      return <CropModal {...modalProps} />;
     default:
       console.error(
         "Failed to create modal for",

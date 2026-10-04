@@ -82,6 +82,7 @@ export const Sidebar = (props: {
         </Show>
         <ServerList
           orderedServers={state.ordering.orderedServers(client())}
+          orderedEntries={state.ordering.orderedEntries(client())}
           setServerOrder={state.ordering.setServerOrder}
           unreadConversations={state.ordering
             .orderedConversations(client())
