@@ -14,9 +14,9 @@ import MdContentCopy from "@material-design-icons/svg/outlined/content_copy.svg?
 import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
 import MdDeleteSweep from "@material-design-icons/svg/outlined/delete_sweep.svg?component-solid";
 import MdDownload from "@material-design-icons/svg/outlined/download.svg?component-solid";
-import MdImage from "@material-design-icons/svg/outlined/image.svg?component-solid";
 import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
 import MdEmojiEmotions from "@material-design-icons/svg/outlined/emoji_emotions.svg?component-solid";
+import MdImage from "@material-design-icons/svg/outlined/image.svg?component-solid";
 import MdLink from "@material-design-icons/svg/outlined/link.svg?component-solid";
 import MdMarkChatUnread from "@material-design-icons/svg/outlined/mark_chat_unread.svg?component-solid";
 import MdOpenInNew from "@material-design-icons/svg/outlined/open_in_new.svg?component-solid";
@@ -245,8 +245,20 @@ export function MessageContextMenu(props: {
     return url;
   }
 
+  /**
+   * Whether the file or embed being shown is an image.
+   */
+  function isImage(): boolean {
+    if (props.file instanceof File) return props.file.metadata.type === "Image";
+    if (props.file instanceof ImageEmbed) return true;
+    return (
+      props.file instanceof WebsiteEmbed &&
+      props.file.specialContent?.type === "GIF"
+    );
+  }
+
   async function copyImage() {
-    const url = props.file?.originalUrl;
+    const url = getFileUrl();
     if (!url) return;
     const res = await fetch(url);
     const blob = await res.blob();
@@ -260,7 +272,7 @@ export function MessageContextMenu(props: {
   return (
     <ContextMenu>
       <Show when={props.file}>
-        <Show when={props.file?.metadata.type === "Image"}>
+        <Show when={isImage()}>
           <ContextMenuButton icon={MdImage} onClick={copyImage}>
             <Trans>Copy image</Trans>
           </ContextMenuButton>

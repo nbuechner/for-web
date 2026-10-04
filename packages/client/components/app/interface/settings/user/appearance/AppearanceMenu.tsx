@@ -291,7 +291,6 @@ export function AppearanceMenu() {
               <Trans>Fruit Salad</Trans>
             </Button>
           </Row>
-
         </Show>
       </Column>
 

@@ -2,7 +2,7 @@ import { Component, JSX, Match, Show, Switch, createMemo } from "solid-js";
 import { styled } from "styled-system/jsx";
 
 import { Channel, Server as ServerI } from "stoat.js";
-import { css, cva } from "styled-system/css";
+import { css } from "styled-system/css";
 
 import {
   CategoryContextMenu,
@@ -61,11 +61,7 @@ export const Sidebar = (props: {
   // On mobile the outer div becomes a fixed full-height drawer; hidden when closed.
   // On desktop it's a normal flex container in the document flow.
   const wrapperClass = () =>
-    isMobile()
-      ? sidebarOpen()
-        ? drawerOpen
-        : drawerHidden
-      : drawerDesktop;
+    isMobile() ? (sidebarOpen() ? drawerOpen : drawerHidden) : drawerDesktop;
 
   return (
     <>
@@ -76,7 +72,11 @@ export const Sidebar = (props: {
       <div class={wrapperClass()}>
         {/* Close chevron button — mobile only, sticks out at the right edge */}
         <Show when={isMobile() && sidebarOpen()}>
-          <button class={closeButton} onClick={closeSidebar} aria-label="Close sidebar">
+          <button
+            class={closeButton}
+            onClick={closeSidebar}
+            aria-label="Close sidebar"
+          >
             ‹
           </button>
         </Show>

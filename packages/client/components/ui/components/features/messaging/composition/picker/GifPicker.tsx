@@ -522,13 +522,7 @@ function GifSearch(props: { query: string }) {
                   e.stopImmediatePropagation();
                 }}
               >
-                <video
-                  playsinline
-                  loop
-                  autoplay
-                  muted
-                  src={gif.previewUrl}
-                />
+                <video playsinline loop autoplay muted src={gif.previewUrl} />
               </GifTile>
             )}
           </For>
